@@ -2,8 +2,7 @@ import os, sys
 import boto3
 from dotenv import load_dotenv
 from agents import Runner, Agent
-from agent.aws_agents import ec2_creation_agent, ec2_stopping_agent
-from agent.tools import create_ec2_vm, stop_ec2_vm
+from agent.ec2_tools import create_ec2_instance, stop_ec2_instance, start_ec2_instance, list_ec2_instances, list_ec2_instance
 
 load_dotenv()
 
@@ -18,7 +17,7 @@ if __name__ == "__main__":
     agent = Agent(
         name="Assistant",
         instructions="You are a helpful assistant for AWS EC2 management.",
-        tools=[create_ec2_vm, stop_ec2_vm]
+        tools=[create_ec2_instance, stop_ec2_instance, start_ec2_instance, list_ec2_instances, list_ec2_instance]
     )
 
     response = Runner.run_sync(agent, user_prompt)
