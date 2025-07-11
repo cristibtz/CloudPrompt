@@ -1,5 +1,5 @@
 from agents import Agent
-from tools import create_ec2_vm, stop_ec2_vm
+from agent.tools import create_ec2_vm, stop_ec2_vm
 
 ec2_creation_agent = Agent(
     name="Assistant", 

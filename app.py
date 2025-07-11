@@ -2,8 +2,8 @@ import os, sys
 import boto3
 from dotenv import load_dotenv
 from agents import Runner, Agent
-from aws_agents import ec2_creation_agent, ec2_stopping_agent
-from tools import create_ec2_vm, stop_ec2_vm
+from agent.aws_agents import ec2_creation_agent, ec2_stopping_agent
+from agent.tools import create_ec2_vm, stop_ec2_vm
 
 load_dotenv()
 
