@@ -1,6 +1,5 @@
 boto3
 dotenv
 openai-agents
-fastmcp
 openai-agents[litellm]
-fastapi
+fastapi[standard]
