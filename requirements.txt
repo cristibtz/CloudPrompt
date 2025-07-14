@@ -5,4 +5,5 @@ logfire
 fastmcp
 asyncio
 httpx
-pydantic_ai 
+pydantic_ai
+streamlit
