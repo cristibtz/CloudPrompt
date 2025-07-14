@@ -1,5 +1,8 @@
 boto3
 dotenv
-openai-agents
-openai-agents[litellm]
 fastapi[standard]
+logfire
+fastmcp
+asyncio
+httpx
+pydantic_ai 
