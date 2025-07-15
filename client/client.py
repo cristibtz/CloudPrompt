@@ -19,12 +19,12 @@ server = MCPServerSSE(url=MCP_SERVER_URL)
 async def run_aws_agent(user_input):
     SYSTEM_PROMPT = (
     "You are a helpful assistant for AWS EC2 management.\n"
-    "If you need the default AMI for a region, call the tool `get_default_ami` with the region name.\n"
-    "Always use the AMI returned by this tool unless the user provides a specific AMI."
+    "Use the right tools to answer user queries as accurately as possible.\n"
     )
 
     user_prompt = f"{user_input}\n \
-    Always try to return a valid JSON format response without using '''json '''."
+    Always try to return a valid JSON format response without using '''json '''.\n \
+    Always return the result exactly the same from the MCP server, don't modify it unless explicitly asked.\n"
     agent = Agent(
         name="Assistant",
         system_prompt=SYSTEM_PROMPT,
