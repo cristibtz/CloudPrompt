@@ -1,7 +1,7 @@
 import boto3
 import logging
 
-DEFAULT_AMIS = {
+AMIs = {
     "us-east-1": {
         "default": "ami-020cba7c55df1f615",
         "os_options": {
@@ -41,7 +41,7 @@ DEFAULT_AMIS = {
 }
 
 
-logger = logging.getLogger("aws_ec2_manager_mcp")
+logger = logging.getLogger("aws_ec2_tools_mcp")
 
 def register_aws_tools(mcp):
 
@@ -50,7 +50,7 @@ def register_aws_tools(mcp):
         os_name: str,
         region_name: str = "us-east-1",
     ):
-        region_data = DEFAULT_AMIS.get(region_name)
+        region_data = AMIs.get(region_name)
         if region_data:
             os_options = region_data.get("os_options", {})
             if os_name.lower() in os_options:
@@ -60,7 +60,7 @@ def register_aws_tools(mcp):
 
     @mcp.tool()
     async def get_default_ami(region_name: str = "us-east-1"):
-        region_data = DEFAULT_AMIS.get(region_name)
+        region_data = AMIs.get(region_name)
         if region_data:
             AMI = region_data["default"]
             logger.info(f"Fetching default AMI for region {region_name}: {AMI}")

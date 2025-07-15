@@ -3,7 +3,7 @@ Automate cloud infrastructure tasks using simple LLM prompts
 
 
 ## Setup .env file
-```
+```.env
 #AWS Credentials
 AWS_ACCESS_KEY_ID=
 AWS_SECRET_ACCESS_KEY=
