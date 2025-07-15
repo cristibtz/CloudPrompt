@@ -3,7 +3,7 @@ import asyncio
 import httpx
 from dotenv import load_dotenv
 from fastmcp import FastMCP
-from tools.aws_tools import register_aws_tools
+from tools.aws_tools.ec2_tools import register_aws_tools
 
 load_dotenv()
 
