@@ -35,7 +35,7 @@ def register_tools(mcp):
                     is_empty = 'Contents' not in objects
                     
                     bucket_info["IsEmpty"] = is_empty
-                    bucket_info["CanDelete"] = is_empty  # Safe to delete if empty
+                    bucket_info["CanDelete"] = is_empty
                     
                     if not is_empty:
                         # Count total objects (optional)
