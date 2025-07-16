@@ -7,3 +7,4 @@ asyncio
 httpx
 pydantic_ai
 streamlit
+rich

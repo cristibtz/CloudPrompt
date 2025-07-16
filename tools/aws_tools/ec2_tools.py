@@ -43,7 +43,7 @@ AMIs = {
 
 logger = logging.getLogger("aws_ec2_tools_mcp")
 
-def register_aws_tools(mcp):
+def register_tools(mcp):
 
     @mcp.tool()
     async def get_ami_by_os(

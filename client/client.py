@@ -1,12 +1,15 @@
 import asyncio
-import os
+import os, sys
 from pydantic_ai import Agent
 from pydantic_ai.mcp import MCPServerSSE
 from dotenv import load_dotenv
 import logfire
 import streamlit as st
+from rich.console import Console
 
 load_dotenv()
+
+console = Console()
 
 MODEL = os.getenv("MODEL")
 MCP_SERVER_URL = "http://localhost:8000/sse"
@@ -35,14 +38,23 @@ async def run_aws_agent(user_input):
         result = await agent.run(user_prompt)
         return result.output
 
-def main():
-    st.title("AWS EC2 Assistant")
-    user_input = st.text_input("Enter your prompt:")
-    if st.button("Submit") and user_input:
-        with st.spinner("Processing..."):
-            output = asyncio.run(run_aws_agent(user_input))
-        st.markdown("### Response")
-        st.code(output)
+async def main():
+
+    user_input = sys.argv[1] if len(sys.argv) > 1 else None
+
+    if user_input:
+        console.print(f"[bold cyan]🚀 Running in CLI mode with user input:[/bold cyan] {user_input}")
+        result = await run_aws_agent(user_input)
+        print(result)
+    else:
+        console.print("[bold yellow]ℹ️  No input provided. Will run Streamlit app.[/bold yellow]")
+        st.title("AWS EC2 Assistant")
+        user_input = st.text_input("Enter your prompt:")
+        if st.button("Submit") and user_input:
+            with st.spinner("Processing..."):
+                output = asyncio.run(run_aws_agent(user_input))
+            st.markdown("### Response")
+            st.code(output)
 
 if __name__ == "__main__":
-    main()
+    asyncio.run(main())

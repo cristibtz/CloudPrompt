@@ -3,7 +3,7 @@ import asyncio
 import httpx
 from dotenv import load_dotenv
 from fastmcp import FastMCP
-from tools.aws_tools.ec2_tools import register_aws_tools
+from tools.aws_tools import register_aws_tools
 
 load_dotenv()
 
@@ -14,7 +14,7 @@ logging.basicConfig(
 logger = logging.getLogger("aws_ec2_manager_mcp")
 
 http_client = httpx.AsyncClient(timeout=10.0)
-mcp = FastMCP("AWS EC2 Manager MCP Server")
+mcp = FastMCP("LLMCloud MCP Server")
 
 register_aws_tools(mcp)
 
