@@ -1,3 +1,29 @@
-venv/
-.env
+# Package build artifacts
+*.egg-info/
+build/
+dist/
 __pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# Environment files
+.env
+.venv/
+env/
+venv/
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
