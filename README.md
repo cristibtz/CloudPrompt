@@ -15,3 +15,20 @@ OPENAI_API_KEY=
 #Logfire token
 LOGFIRE_TOKEN=
 ```
+
+## To do
+
+- [ ] Comprehensively read AWS boto3 docs for EC2 and S3
+- [ ] Improve app's codebase structure
+    - [ ] Redefine app's architecture in draw.io
+    - [ ] Define folder corresponding to app's architecture (frontend, backend, MCP server, etc)
+    - [ ] Classify code accordingly to its appearance frequency and its functions
+- [ ] Improve:
+    - [ ] Backend
+    - [ ] CLI tool
+    - [ ] MCP server
+- [ ] Create frontend prototype
+- [ ] Learn about API usage costs
+    - [ ] Cost debugging
+    - [ ] Cost monitoring and logging
+
