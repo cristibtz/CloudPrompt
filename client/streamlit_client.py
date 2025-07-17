@@ -63,16 +63,18 @@ def main():
             try:
                 # Run the async function
                 result = asyncio.run(run_aws_agent(user_input))
-                
+
+                output = result.output
+
                 st.success("✅ Command executed successfully!")
                 
                 # Display the result
-                if isinstance(result, str):
+                if isinstance(output, str):
                     st.markdown("### Result")
-                    st.code(result, language="json")
-                elif isinstance(result, dict):
+                    st.code(output, language="json")
+                elif isinstance(output, dict):
                     st.markdown("### Result")
-                    st.json(result)
+                    st.json(output)
                 else:
                     st.error("❌ Unexpected result format. Please try again.")
                     

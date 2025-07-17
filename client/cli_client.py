@@ -12,7 +12,7 @@ async def main():
     if user_input:
         console.print(f"[bold cyan]🚀 Running in CLI mode with user input:[/bold cyan] {user_input}")
         result = await run_aws_agent(user_input)
-        print(result)
+        print(result.output)
 
 if __name__ == "__main__":
     asyncio.run(main())
