@@ -19,11 +19,15 @@ LOGFIRE_TOKEN=
 ## To do
 
 - [ ] Comprehensively read AWS boto3 docs for EC2 and S3
+    - [x] EC2
+    - [ ] S3
+- [x] Document each MCP server tool
 - [ ] Improve app's codebase structure
-    - [ ] Redefine app's architecture in draw.io
+    - [ ] Redo app's architecture in draw.io
     - [x] Define folder corresponding to app's architecture (frontend, backend, MCP server, etc)
     - [ ] Classify code accordingly to its appearance frequency and its functions
 - [ ] Improve:
+    - [ ] Add try/catch blocks wherever suited
     - [ ] Backend
     - [ ] CLI tool
     - [ ] MCP server
