@@ -50,6 +50,12 @@ def register_tools(mcp):
         os_name: str,
         region_name: str = "us-east-1",
     ):
+        '''
+        Get AMI by OS name in a specific region.
+        :param os_name: str - Name of the operating system (e.g., "Ubuntu Server 24.04 LTS").
+        :param region_name: str -  AWS region name (default is "us-east-1").
+        :return: Dict[str, Dict[str, str]] List of AMIs for the specified OS in the given region.
+        '''
         region_data = AMIs.get(region_name)
         if region_data:
             os_options = region_data.get("os_options", {})
@@ -60,11 +66,16 @@ def register_tools(mcp):
 
     @mcp.tool()
     async def get_default_ami(region_name: str = "us-east-1"):
+        '''
+        Get the default AMI for a specific region.
+        :param region_name: str - AWS region name (default is "us-east-1").
+        :return: Dict[str, str] - AMI ID for the specified region.   
+        '''
         region_data = AMIs.get(region_name)
         if region_data:
             AMI = region_data["default"]
             logger.info(f"Fetching default AMI for region {region_name}: {AMI}")
-            return AMI
+            return {"AMI": AMI}
         return "Not found"
 
     @mcp.tool()
@@ -75,6 +86,15 @@ def register_tools(mcp):
         ImageId: str,
         region_name: str = "us-east-1"
     ):
+        '''
+        Create an EC2 instance with specified parameters.
+        :param MinCount: int - Minimum number of instances to launch.
+        :param MaxCount: int -Maximum number of instances to launch.
+        :param InstanceType: str - Type of instance to launch (e.g., "t2.micro").
+        :param ImageId: str - ID of the AMI to use for the instance.
+        :param region_name: str -  AWS region name (default is "us-east-1").
+        :return:  Dict[str, List[Dict[str, str]]] - Information about the created instances.
+        '''
         logger.info(f"Creating EC2 instance: MinCount={MinCount}, MaxCount={MaxCount}, InstanceType={InstanceType}, ImageId={ImageId}, region={region_name}")
         ec2 = boto3.resource('ec2', region_name=region_name)
         instances = ec2.create_instances(
@@ -97,6 +117,12 @@ def register_tools(mcp):
         instance_id: str,
         region_name: str = "us-east-1"
     ):
+        '''
+        Stop an EC2 instance by its ID.
+        :param instance_id: str - ID of the EC2 instance to stop.
+        :param region_name: str - AWS region name (default is "us-east-1").
+        :return: Dict[str, str] - Information about the stopped instance.
+        '''
         logger.info(f"Stopping EC2 instance: {instance_id} in region {region_name}")
         ec2 = boto3.resource('ec2', region_name=region_name)
         instance = ec2.Instance(instance_id)
@@ -108,6 +134,11 @@ def register_tools(mcp):
     async def list_ec2_instances(
         region_name: str = "us-east-1"
     ):
+        '''
+        List all EC2 instances in a specific region.
+        :param region_name: str - AWS region name (default is "us-east-1").
+        :return: Dict[str, List[Dict[str, str]]] - List of all EC2 instances in the specified region. 
+        '''
         logger.info(f"Listing all EC2 instances in region {region_name}")
         ec2 = boto3.client('ec2', region_name=region_name)
         response = ec2.describe_instances()
@@ -128,6 +159,12 @@ def register_tools(mcp):
         instance_id: str,
         region_name: str = "us-east-1"
     ):
+        '''
+        Get details of a specific EC2 instance by its ID.
+        :param instance_id: str - ID of the EC2 instance to retrieve details for.
+        :param region_name: str - AWS region name (default is "us-east-1").
+        :return: Dict[str, List[Dict[str, str]]] - Details of the specified EC2 instance.
+        '''
         logger.info(f"Getting details for EC2 instance: {instance_id} in region {region_name}")
         ec2 = boto3.client('ec2', region_name=region_name)
         response = ec2.describe_instances(InstanceIds=[instance_id])
@@ -141,13 +178,19 @@ def register_tools(mcp):
                     'Public IPv4': instance.get('PublicIpAddress'), 
                 })
         logger.info(f"Details for EC2 instance {instance_id}: {instances}")
-        return {"instances": instances}
+        return {"instance": instances}
 
     @mcp.tool()
     async def start_ec2_instance(
         instance_id: str,
         region_name: str = "us-east-1"
     ):
+        '''
+        Start an EC2 instance by its ID.
+        :param instance_id: str - ID of the EC2 instance to start.
+        :param region_name: str - AWS region name (default is "us-east-1").
+        :return: Dict[str, str] - Information about the started instance.
+        '''
         logger.info(f"Starting EC2 instance: {instance_id} in region {region_name}")
         ec2 = boto3.resource('ec2', region_name=region_name)
         instance = ec2.Instance(instance_id)
@@ -160,6 +203,12 @@ def register_tools(mcp):
         instance_id: str,
         region_name: str = "us-east-1"
     ):
+        '''
+        Terminate an EC2 instance by its ID.
+        :param instance_id: str -  ID of the EC2 instance to terminate.
+        :param region_name: str - AWS region name (default is "us-east-1").
+        :return: Dict[str, str] Information about the terminated instance.
+        '''
         logger.info(f"Terminating EC2 instance: {instance_id} in region {region_name}")
         ec2 = boto3.resource('ec2', region_name=region_name)
         instance = ec2.Instance(instance_id)
