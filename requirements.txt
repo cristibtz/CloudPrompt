@@ -9,3 +9,5 @@ httpx
 pydantic_ai
 streamlit
 rich
+langchain
+langchain_community
