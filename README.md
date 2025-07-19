@@ -18,9 +18,9 @@ LOGFIRE_TOKEN=
 
 ## To do
 
-- [ ] Comprehensively read AWS boto3 docs for EC2 and S3
+- [x] Read AWS boto3 docs for EC2 and S3
     - [x] EC2
-    - [ ] S3
+    - [x] S3
 - [x] Document each MCP server tool
 - [ ] Improve app's codebase structure
     - [ ] Redo app's architecture in draw.io
