@@ -4,6 +4,8 @@ import httpx
 from dotenv import load_dotenv
 from fastmcp import FastMCP
 from tools.aws_tools import register_aws_tools
+from tools.azure_tools import register_azure_tools
+from tools.gcp_tools import register_gcp_tools
 
 load_dotenv()
 
@@ -17,6 +19,8 @@ http_client = httpx.AsyncClient(timeout=10.0)
 mcp = FastMCP("LLMCloud MCP Server")
 
 register_aws_tools(mcp)
+register_azure_tools(mcp)
+register_gcp_tools(mcp)
 
 if __name__ == "__main__":
     try:
