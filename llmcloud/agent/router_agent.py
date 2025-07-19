@@ -1,12 +1,23 @@
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
+import logfire
 from langchain.prompts import PromptTemplate
 from langchain_openai import ChatOpenAI
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnableLambda
 from llmcloud.agent.agent import run_aws_agent, run_azure_agent, run_gcp_agent
-import os
+
+logfire.configure(
+    token=os.getenv("LOGFIRE_TOKEN")
+    )
 
 class CloudRouterAgent:
     def __init__(self):
+        logfire.info("Initializing CloudRouterAgent")
+        
         self.model = ChatOpenAI(
             model=os.getenv("MODEL", "gpt-4o-mini"),
             openai_api_key=os.getenv("OPENAI_API_KEY"),
@@ -38,7 +49,7 @@ class CloudRouterAgent:
     def _clean_destination(self, destination: str) -> str:
         """Clean and validate the routing destination"""
         destination = destination.strip().lower()
-
+        
         if "aws" in destination:
             return "aws"
         elif "azure" in destination:
@@ -46,30 +57,43 @@ class CloudRouterAgent:
         elif "gcp" in destination or "google" in destination:
             return "gcp"
         else:
-            return "unknown" 
+            return "unknown"
 
     async def route_and_execute(self, user_input: str):
         """Route the user input to the appropriate agent and execute it."""
         
-        try:
-            destination = await self.routing_chain.ainvoke({"input": user_input})
-            
-            print(f"Routing to: {destination.upper()}")
-            
-            if destination == "aws":
-                return await run_aws_agent(user_input)
-            elif destination == "azure":
-                return await run_azure_agent(user_input)
-            elif destination == "gcp":
-                return await run_gcp_agent(user_input)
-            else:
-                # Return error instead of defaulting
-                error_msg = f"Unable to determine cloud provider for: '{user_input}'\n" \
-                           f"Detected destination: '{destination}'\n" \
-                           f"Please specify a cloud provider (AWS, Azure, or GCP) related terminology in your request."
-                return type('Result', (), {'output': error_msg})()
+        with logfire.span('cloud_router.route_and_execute', user_input=user_input) as span:
+            try:
+                logfire.info("Router: Processing request", user_input=user_input)
                 
-        except Exception as e:
-            error_msg = f"Routing error: {e}\n" \
-                       f"Please try rephrasing your request with a clear cloud provider."
-            return type('Result', (), {'output': error_msg})()
+                with logfire.span('cloud_router.routing_decision'):
+                    destination = await self.routing_chain.ainvoke({"input": user_input})
+                
+                logfire.info("Router: Decision made", destination=destination, user_input=user_input)
+                span.set_attribute("destination", destination)
+                print(f"Routing to: {destination.upper()}")
+                
+                if destination == "aws":
+                    with logfire.span('cloud_router.execute_aws_agent'):
+                        return await run_aws_agent(user_input)
+                elif destination == "azure":
+                    with logfire.span('cloud_router.execute_azure_agent'):
+                        return await run_azure_agent(user_input)
+                elif destination == "gcp":
+                    with logfire.span('cloud_router.execute_gcp_agent'):
+                        return await run_gcp_agent(user_input)
+                else:
+                    logfire.warn("Router: Unknown destination", destination=destination)
+                    span.set_attribute("error", "unknown_destination")
+                    error_msg = f"Unable to determine cloud provider for: '{user_input}'\n" \
+                               f"Detected destination: '{destination}'\n" \
+                               f"Please specify a cloud provider (AWS, Azure, or GCP) related terminology in your request."
+                    return type('Result', (), {'output': error_msg})()
+                    
+            except Exception as e:
+                logfire.error("Router: Execution failed", error=str(e), user_input=user_input)
+                span.record_exception(e)
+                span.set_attribute("error", True)
+                error_msg = f"Routing error: {e}\n" \
+                           f"Please try rephrasing your request with a clear cloud provider."
+                return type('Result', (), {'output': error_msg})()

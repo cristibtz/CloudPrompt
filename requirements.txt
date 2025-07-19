@@ -3,6 +3,7 @@ botocore
 dotenv
 fastapi[standard]
 logfire
+logfire[langchain]
 fastmcp
 asyncio
 httpx
