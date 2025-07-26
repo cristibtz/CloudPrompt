@@ -16,7 +16,7 @@ logging.basicConfig(
 logger = logging.getLogger("aws_ec2_manager_mcp")
 
 http_client = httpx.AsyncClient(timeout=10.0)
-mcp = FastMCP("LLMCloud MCP Server")
+mcp = FastMCP("CloudPrompt MCP Server")
 
 register_aws_tools(mcp)
 register_azure_tools(mcp)

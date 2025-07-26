@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 import logfire
 import streamlit as st
 from rich.console import Console
-from llmcloud.agent.agent import run_aws_agent
+from cloudprompt.agent.agent import run_aws_agent
 
 console = Console()
 

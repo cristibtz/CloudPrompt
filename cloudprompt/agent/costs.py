@@ -1,5 +1,5 @@
 from rich.console import Console
-from llmcloud.agent.agent import run_aws_agent
+from cloudprompt.agent.agent import run_aws_agent
 from dotenv import load_dotenv
 import os
 

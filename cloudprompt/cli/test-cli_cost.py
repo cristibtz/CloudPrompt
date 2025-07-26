@@ -1,8 +1,8 @@
 import asyncio
 import os, sys
-from llmcloud.agent.agent import run_aws_agent
-from llmcloud.agent.costs import calculate_cost_from_usage, agent_usage_data
-from llmcloud.agent.router_agent import CloudRouterAgent
+from cloudprompt.agent.agent import run_aws_agent
+from cloudprompt.agent.costs import calculate_cost_from_usage, agent_usage_data
+from cloudprompt.agent.router_agent import CloudRouterAgent
 from rich.console import Console
 
 console = Console()

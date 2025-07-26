@@ -21,8 +21,8 @@ except FileNotFoundError:
     ]
 
 setup(
-    name="llmcloud",
-    version="0.1.0",
+    name="cloudprompt",
+    version="0.0.1",
     author="Cristian Branet",
     author_email="branet.cristian@gmail.com",
     description="Automate cloud infrastructure tasks using simple LLM prompts",
@@ -30,22 +30,11 @@ setup(
     long_description_content_type="text/markdown",
     url="https://github.com/cristibtz/LLMCloud",
     packages=find_packages(),
-    classifiers=[
-        "Development Status :: 3 - Alpha",
-        "Intended Audience :: Developers",
-        "License :: OSI Approved :: MIT License",
-        "Operating System :: OS Independent",
-        "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.8",
-        "Programming Language :: Python :: 3.9",
-        "Programming Language :: Python :: 3.10",
-        "Programming Language :: Python :: 3.11",
-    ],
     python_requires=">=3.8",
     install_requires=requirements,
     entry_points={
         "console_scripts": [
-            "llmcloud=llmcloud.cli.cli_client:main_sync",
+            "cloudprompt=cloudprompt.cli.cli_client:main_sync",
         ],
     },
     include_package_data=True,

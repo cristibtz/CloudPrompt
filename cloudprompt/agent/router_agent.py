@@ -8,7 +8,7 @@ from langchain.prompts import PromptTemplate
 from langchain_openai import ChatOpenAI
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnableLambda
-from llmcloud.agent.agent import run_aws_agent, run_azure_agent, run_gcp_agent
+from cloudprompt.agent.agent import run_aws_agent, run_azure_agent, run_gcp_agent
 
 logfire.configure(
     token=os.getenv("LOGFIRE_TOKEN")
