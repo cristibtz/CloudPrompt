@@ -94,6 +94,5 @@ class CloudRouterAgent:
                 logfire.error("Router: Execution failed", error=str(e), user_input=user_input)
                 span.record_exception(e)
                 span.set_attribute("error", True)
-                error_msg = f"Routing error: {e}\n" \
-                           f"Please try rephrasing your request with a clear cloud provider."
+                error_msg = f"Routing error: {e}\n"
                 return type('Result', (), {'output': error_msg})()
