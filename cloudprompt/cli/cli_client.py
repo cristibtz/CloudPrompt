@@ -1,8 +1,8 @@
 import asyncio
 import sys
 from rich.console import Console
-from llmcloud.agent.agent import run_aws_agent
-from llmcloud.agent.router_agent import CloudRouterAgent
+from cloudprompt.agent.agent import run_aws_agent
+from cloudprompt.agent.router_agent import CloudRouterAgent
 
 console = Console()
 
