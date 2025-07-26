@@ -17,7 +17,11 @@ except FileNotFoundError:
         "uvicorn",
         "logfire",
         "mcp",
-        "starlette",
+        "langchain",
+        "langchain_community",
+        "langchain_openai",
+        "langchain_core",
+        "pydantic_ai",
     ]
 
 setup(
