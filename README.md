@@ -1,4 +1,4 @@
-# LLMCloud
+# CloudPrompt
 Automate cloud infrastructure tasks using simple LLM prompts
 
 
@@ -34,11 +34,12 @@ LANGSMITH_PROJECT=""
     - [ ] Classify code accordingly to its appearance frequency and its functions
 - [ ] Improve:
     - [ ] Add try/catch blocks wherever suited
+        - [ ] In agent.py, MCP server's tools
     - [ ] Backend
-    - [ ] CLI tool
+    - [#] CLI tool
     - [ ] MCP server
 - [ ] Create frontend prototype
-- [ ] Learn about API usage costs
-    - [ ] Cost debugging
-    - [ ] Cost monitoring and logging
+- [#] Learn about API usage costs
+    - [#] Cost debugging
+    - [#] Cost monitoring and logging
 
