@@ -80,7 +80,11 @@ async def run_aws_agent(user_input):
     async with agent.run_mcp_servers():
         console.print("Running agent...")
 
-        result = await agent.run(user_prompt)
+        try:
+            result = await agent.run(user_prompt)
+        except Exception as e:
+            console.print(f"Error occurred: {e}")
+            return {"error": str(e)}
 
         end_time = time.time()
         duration = end_time - start_time
@@ -121,7 +125,11 @@ async def run_azure_agent(user_input):
     async with agent.run_mcp_servers():
         console.print("Running agent...")
 
-        result = await agent.run(user_prompt)
+        try:
+            result = await agent.run(user_prompt)
+        except Exception as e:
+            console.print(f"Error occurred: {e}")
+            return {"error": str(e)}
 
         end_time = time.time()
         duration = end_time - start_time
@@ -162,7 +170,11 @@ async def run_gcp_agent(user_input):
     async with agent.run_mcp_servers():
         console.print("Running agent...")
 
-        result = await agent.run(user_prompt)
+        try:
+            result = await agent.run(user_prompt)
+        except Exception as e:
+            console.print(f"Error occurred: {e}")
+            return {"error": str(e)}
 
         end_time = time.time()
         duration = end_time - start_time
