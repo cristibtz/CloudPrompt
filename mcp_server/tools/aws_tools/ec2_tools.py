@@ -85,6 +85,8 @@ def register_tools(mcp):
         MaxCount: int,
         InstanceType: str,
         ImageId: str,
+        StorageSize: int = 8,
+        VolumeType: str = "gp3",
         region_name: str = "us-east-1"
     ):
         '''
@@ -103,7 +105,17 @@ def register_tools(mcp):
                 ImageId=ImageId,
                 MinCount=MinCount,
                 MaxCount=MaxCount,
-                InstanceType=InstanceType
+                InstanceType=InstanceType,
+                BlockDeviceMappings=[
+                    {
+                        'DeviceName': '/dev/sda1',
+                        'Ebs': {
+                            'VolumeSize': StorageSize,
+                            'DeleteOnTermination': True,
+                            'VolumeType': VolumeType
+                        }
+                    }
+                ]
             )
         except ClientError as e:
             logger.error(f"Error creating EC2 instance: {e}")
@@ -243,6 +255,6 @@ def register_tools(mcp):
         except ClientError as e:
             logger.error(f"Error terminating EC2 instance: {e}")
             return {"error": str(e)}
-            
+
         logger.info(f"Terminated EC2 instance: {instance_id}")
         return {"terminated_instance_id": instance_id}
