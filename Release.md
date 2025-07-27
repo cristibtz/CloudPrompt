@@ -9,8 +9,8 @@
     - [x] Define folder corresponding to app's architecture (frontend, backend, MCP server, etc)
     - [ ] Classify code accordingly to its appearance frequency and its functions
 - [ ] Improve:
-    - [ ] Add try/catch blocks wherever suited
-        - [ ] In agent.py, MCP server's tools
+    - [x] Add try/catch blocks wherever suited
+        - [x] In agent.py, MCP server's tools
     - [ ] Backend
     - [x] CLI tool
     - [ ] MCP server
