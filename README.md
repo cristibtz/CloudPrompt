@@ -45,10 +45,10 @@ LANGSMITH_PROJECT=""
     - [ ] Add try/catch blocks wherever suited
         - [ ] In agent.py, MCP server's tools
     - [ ] Backend
-    - [#] CLI tool
+    - [x] CLI tool
     - [ ] MCP server
 - [ ] Create frontend prototype
-- [#] Learn about API usage costs
-    - [#] Cost debugging
-    - [#] Cost monitoring and logging
+- [x] Learn about API usage costs
+    - [x] Cost debugging
+    - [x] Cost monitoring and logging
 
