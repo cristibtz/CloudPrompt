@@ -18,8 +18,8 @@ def register_tools(mcp):
         :return: Dict[str, str] - Information about the created bucket containing bucket_name and location.
         '''
         logger.info(f"Creating S3 bucket: {bucket_name} in region {region_name}")
-        s3 = boto3.client('s3', region_name=region_name)
         try:
+            s3 = boto3.client('s3', region_name=region_name)
             if region_name == "us-east-1":
                 response = s3.create_bucket(Bucket=bucket_name)
             else:
@@ -50,8 +50,9 @@ def register_tools(mcp):
         '''
 
         logger.info(f"Listing S3 buckets in region: {region_name}")
-        s3 = boto3.client('s3', region_name=region_name)
+
         try:
+            s3 = boto3.client('s3', region_name=region_name)
             response = s3.list_buckets(BucketRegion=region_name)
         except ClientError as e:
             error_msg = str(e)
@@ -106,9 +107,9 @@ def register_tools(mcp):
         :return: Dict[str, List[Dict[str, Union[str, int]]]] - List of objects with their keys and sizes.
         '''
         logger.info(f"Listing objects in S3 bucket: {bucket_name} in region {region_name}")
-        s3 = boto3.client('s3', region_name=region_name)
         
-        try:
+        try:        
+            s3 = boto3.client('s3', region_name=region_name)
             response = s3.list_objects_v2(Bucket=bucket_name)
             if 'Contents' not in response:
                 return {"objects": []}
@@ -143,9 +144,9 @@ def register_tools(mcp):
         :return: Dict[str, str] - Information about the deleted bucket or error message.
         '''
         logger.info(f"Deleting S3 bucket: {bucket_name} in region {region_name}")
-        s3 = boto3.client('s3', region_name=region_name)
         
         try:
+            s3 = boto3.client('s3', region_name=region_name)
             if force:
                 # Empty the bucket first
                 logger.info(f"Force delete enabled - emptying bucket {bucket_name} first")
