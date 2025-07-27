@@ -95,10 +95,12 @@ def register_tools(mcp):
         :param MaxCount: int -Maximum number of instances to launch.
         :param InstanceType: str - Type of instance to launch (e.g., "t2.micro").
         :param ImageId: str - ID of the AMI to use for the instance.
+        :param StorageSize: int - Size of the root volume in GB (default is 8).
+        :param VolumeType: str - Type of volume to create (default is "gp3").
         :param region_name: str -  AWS region name (default is "us-east-1").
         :return:  Dict[str, List[Dict[str, str]]] - Information about the created instances.
         '''
-        logger.info(f"Creating EC2 instance: MinCount={MinCount}, MaxCount={MaxCount}, InstanceType={InstanceType}, ImageId={ImageId}, region={region_name}")
+        logger.info(f"Creating EC2 instance: MinCount={MinCount}, MaxCount={MaxCount}, InstanceType={InstanceType}, ImageId={ImageId}, StorageSize={StorageSize}, VolumeType={VolumeType}, region={region_name}")
         try:
             ec2 = boto3.resource('ec2', region_name=region_name)
             instances = ec2.create_instances(
