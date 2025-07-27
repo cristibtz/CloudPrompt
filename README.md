@@ -1,6 +1,15 @@
-# CloudPrompt
-Automate cloud infrastructure tasks using simple LLM prompts
-
+<h1 align="center">
+ <a href="#">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="photos/logo.png"/>
+    <img height="240" width="240" src="photos/logo.png"/>
+  </picture>
+ </a>
+ <br />
+</h1>
+<p align="center">
+    ☁️ Automate cloud infrastructure tasks using simple LLM prompts ☁️
+</p>
 
 ## Setup .env file
 ```.env
