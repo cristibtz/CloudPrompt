@@ -73,7 +73,7 @@ async def run_aws_agent(user_input):
         name="Assistant",
         system_prompt=SYSTEM_PROMPT,
         model=MODEL,
-        mcp_servers=[server],
+        toolsets=[server],
         prepare_tools=filter_aws_tools
     )
     
@@ -113,7 +113,7 @@ async def run_azure_agent(user_input):
         name="Assistant",
         system_prompt=SYSTEM_PROMPT,
         model=MODEL,
-        mcp_servers=[server],
+        toolsets=[server],
         prepare_tools=filter_azure_tools
 
     )
@@ -154,7 +154,7 @@ async def run_gcp_agent(user_input):
         name="Assistant",
         system_prompt=SYSTEM_PROMPT,
         model=MODEL,
-        mcp_servers=[server],
+        toolsets=[server],
         prepare_tools=filter_gcp_tools
 
     )
