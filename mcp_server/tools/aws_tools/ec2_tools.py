@@ -1,4 +1,5 @@
 import boto3
+from botocore.exceptions import ClientError
 import logging
 
 AMIs = {
@@ -96,13 +97,18 @@ def register_tools(mcp):
         :return:  Dict[str, List[Dict[str, str]]] - Information about the created instances.
         '''
         logger.info(f"Creating EC2 instance: MinCount={MinCount}, MaxCount={MaxCount}, InstanceType={InstanceType}, ImageId={ImageId}, region={region_name}")
-        ec2 = boto3.resource('ec2', region_name=region_name)
-        instances = ec2.create_instances(
-            ImageId=ImageId,
-            MinCount=MinCount,
-            MaxCount=MaxCount,
-            InstanceType=InstanceType
-        )
+        try:
+            ec2 = boto3.resource('ec2', region_name=region_name)
+            instances = ec2.create_instances(
+                ImageId=ImageId,
+                MinCount=MinCount,
+                MaxCount=MaxCount,
+                InstanceType=InstanceType
+            )
+        except ClientError as e:
+            logger.error(f"Error creating EC2 instance: {e}")
+            return {"error": str(e)}
+
         instance_info = []
         for instance in instances:
             instance_info.append({
@@ -124,9 +130,14 @@ def register_tools(mcp):
         :return: Dict[str, str] - Information about the stopped instance.
         '''
         logger.info(f"Stopping EC2 instance: {instance_id} in region {region_name}")
-        ec2 = boto3.resource('ec2', region_name=region_name)
-        instance = ec2.Instance(instance_id)
-        instance.stop()
+        try:
+            ec2 = boto3.resource('ec2', region_name=region_name)
+            instance = ec2.Instance(instance_id)
+            instance.stop()
+        except ClientError as e:
+            logger.error(f"Error stopping EC2 instance: {e}")
+            return {"error": str(e)}
+            
         logger.info(f"Stopped EC2 instance: {instance_id}")
         return {"stopped_instance_id": instance_id}
 
@@ -140,8 +151,13 @@ def register_tools(mcp):
         :return: Dict[str, List[Dict[str, str]]] - List of all EC2 instances in the specified region. 
         '''
         logger.info(f"Listing all EC2 instances in region {region_name}")
-        ec2 = boto3.client('ec2', region_name=region_name)
-        response = ec2.describe_instances()
+        try:
+            ec2 = boto3.client('ec2', region_name=region_name)
+            response = ec2.describe_instances()
+        except ClientError as e:
+            logger.error(f"Error listing EC2 instances: {e}")
+            return {"error": str(e)}
+
         instances = []
         for reservation in response['Reservations']:
             for instance in reservation['Instances']:
@@ -166,8 +182,13 @@ def register_tools(mcp):
         :return: Dict[str, List[Dict[str, str]]] - Details of the specified EC2 instance.
         '''
         logger.info(f"Getting details for EC2 instance: {instance_id} in region {region_name}")
-        ec2 = boto3.client('ec2', region_name=region_name)
-        response = ec2.describe_instances(InstanceIds=[instance_id])
+        try:
+            ec2 = boto3.client('ec2', region_name=region_name)
+            response = ec2.describe_instances(InstanceIds=[instance_id])
+        except ClientError as e:
+            logger.error(f"Error getting details for EC2 instance {instance_id}: {e}")
+            return {"error": str(e)}
+
         instances = []
         for reservation in response['Reservations']:
             for instance in reservation['Instances']:
@@ -192,9 +213,14 @@ def register_tools(mcp):
         :return: Dict[str, str] - Information about the started instance.
         '''
         logger.info(f"Starting EC2 instance: {instance_id} in region {region_name}")
-        ec2 = boto3.resource('ec2', region_name=region_name)
-        instance = ec2.Instance(instance_id)
-        instance.start()
+        try:
+            ec2 = boto3.resource('ec2', region_name=region_name)
+            instance = ec2.Instance(instance_id)
+            instance.start()
+        except ClientError as e:
+            logger.error(f"Error starting EC2 instance: {e}")
+            return {"error": str(e)}
+
         logger.info(f"Started EC2 instance: {instance_id}")
         return {"started_instance_id": instance_id}
 
@@ -210,8 +236,13 @@ def register_tools(mcp):
         :return: Dict[str, str] Information about the terminated instance.
         '''
         logger.info(f"Terminating EC2 instance: {instance_id} in region {region_name}")
-        ec2 = boto3.resource('ec2', region_name=region_name)
-        instance = ec2.Instance(instance_id)
-        instance.terminate()
+        try:
+            ec2 = boto3.resource('ec2', region_name=region_name)
+            instance = ec2.Instance(instance_id)
+            instance.terminate()
+        except ClientError as e:
+            logger.error(f"Error terminating EC2 instance: {e}")
+            return {"error": str(e)}
+            
         logger.info(f"Terminated EC2 instance: {instance_id}")
         return {"terminated_instance_id": instance_id}
