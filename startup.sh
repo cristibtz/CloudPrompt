@@ -1,5 +1,12 @@
 #!/bin/bash
 
+#Check if MCP server is already running
+if pgrep -f "mcp_server/mcp_server.py" > /dev/null; then
+    echo "MCP server is already running."
+    kill $(pgrep -f "mcp_server/mcp_server.py")
+    echo "MCP server stopped."
+fi
+
 # Check if virtual environment exists
 if [ ! -d "./venv" ]; then
     echo "Virtual environment not found. Please create it first."
