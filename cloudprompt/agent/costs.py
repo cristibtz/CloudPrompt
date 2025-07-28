@@ -7,9 +7,11 @@ load_dotenv()
 
 MODEL = os.getenv("MODEL")
 
-# Define Model costs
+# Define Model costs per 1000 tokens
 MODEL_COSTS = {
-    "gpt-4o-mini": {"input": 0.000150, "output": 0.000600},
+    "gpt-4o-mini": {"input": 0.000150, "output": 0.000600}, # Best
+    "gpt-4.1-nano":{ "input": 0.00010, "output": 0.000400},
+    "o3-mini": {"input": 0.0011, "output": 0.0044},
 }
 
 console = Console()
