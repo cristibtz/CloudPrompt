@@ -131,6 +131,47 @@ def register_tools(mcp):
             return {"status": "error", "message": error_msg}
 
     @mcp.tool()
+    async def delete_s3_bucket_object(
+        bucket_name: str,
+        object_key: str,
+        region_name: str = "us-east-1"
+    ):
+        '''
+        Delete a specific object from an S3 bucket.
+        :param bucket_name: str - Name of the S3 bucket.
+        :param object_key: str - Key of the object to delete.
+        :param region_name: str - AWS region name (default is "us-east-1").
+        :return: Dict[str, str] - Information about the deleted object or error message.
+        '''
+        logger.info(f"Deleting object {object_key} from S3 bucket: {bucket_name} in region {region_name}")
+        
+        try:
+            s3 = boto3.client('s3', region_name=region_name)
+            
+            try:
+                s3.head_object(Bucket=bucket_name, Key=object_key)
+                logger.info(f"Object {object_key} found in bucket {bucket_name}")
+            except ClientError as e:
+                if e.response['Error']['Code'] == '404':
+                    logger.warning(f"Object {object_key} not found in bucket {bucket_name}")
+                    return {
+                        "status": "error", 
+                        "message": f"Object '{object_key}' not found in bucket '{bucket_name}'"
+                    }
+                else:
+                    raise e
+            
+            response = s3.delete_object(Bucket=bucket_name, Key=object_key)
+        
+            logger.info(f"Successfully deleted object {object_key} from bucket {bucket_name}")
+            return {"deleted_object": object_key}
+            
+        except ClientError as e:
+            error_msg = str(e)
+            logger.error(f"Failed to delete object {object_key} from bucket {bucket_name}: {error_msg}")
+            return {"status": "error", "message": error_msg}
+
+    @mcp.tool()
     async def delete_s3_bucket(
         bucket_name: str,
         force: bool = False,
