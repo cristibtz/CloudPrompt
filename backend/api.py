@@ -1,21 +1,27 @@
 import asyncio
 from fastapi import FastAPI
 from pydantic import BaseModel
-from llmcloud.agent.agent import run_aws_agent
+from cloudprompt.agent.router_agent import CloudRouterAgent
 import json, ast
 
 app = FastAPI()
 
+router = CloudRouterAgent()
+
 class Request(BaseModel):
     prompt: str
 
-@app.post("/api/v1/aws")
-async def aws_management(request: Request):
+@app.post("/api/v1/execute")
+async def route_and_execute(request: Request):
+
     user_input = request.prompt
+    
     if not user_input:
+
         return {"error": "Prompt cannot be empty."}
+
     try:
-        result = await run_aws_agent(user_input)
+        result = await router.route_and_execute(user_input)
 
         output = result.output
 
@@ -23,4 +29,5 @@ async def aws_management(request: Request):
     except json.JSONDecodeError:
         return {"error": "Invalid JSON response from agent."}
     except Exception as e:
-        return {"error": f"An error occurred: {str(e)}"}
+        return {"error": f"Internal server error"}
+        print(f"Error: {e}")
