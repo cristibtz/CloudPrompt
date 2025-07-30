@@ -14,6 +14,7 @@ app.add_middleware(
         "http://127.0.0.1:3000",   # Alternative localhost
         "http://localhost:5173",   # Vite dev server
         "http://127.0.0.1:5173",   # Alternative Vite
+        "http://192.168.100.179:5173", # Local network Vite
     ],
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
@@ -24,6 +25,7 @@ router = CloudRouterAgent()
 
 class Request(BaseModel):
     prompt: str
+
 
 @app.post("/api/v1/execute")
 async def route_and_execute(request: Request):
@@ -51,5 +53,6 @@ async def health_check():
 
     try:
         return {"status": "ok"}
+        
     except Exception as e:
         return {"status": "error", "message": str(e)}
