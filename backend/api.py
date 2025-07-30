@@ -1,10 +1,24 @@
 import asyncio
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from cloudprompt.agent.router_agent import CloudRouterAgent
 import json, ast
 
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:3000",    # React dev server
+        "http://127.0.0.1:3000",   # Alternative localhost
+        "http://localhost:5173",   # Vite dev server
+        "http://127.0.0.1:5173",   # Alternative Vite
+    ],
+    allow_credentials=True,
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allow_headers=["*"],
+)
 
 router = CloudRouterAgent()
 
@@ -31,3 +45,11 @@ async def route_and_execute(request: Request):
     except Exception as e:
         return {"error": f"Internal server error"}
         print(f"Error: {e}")
+
+@app.get("/api/v1/health")
+async def health_check():
+
+    try:
+        return {"status": "ok"}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
