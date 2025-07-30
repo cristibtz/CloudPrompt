@@ -6,11 +6,7 @@ import {
 } from "@/components/ui/navigation-menu"
 import { useState } from "react"
 
-interface HeaderProps {
-  apiStatus?: boolean | null
-}
-
-export function Header({ apiStatus }: HeaderProps) {
+export function Header() {
     const [isMenuOpen, setIsMenuOpen] = useState(false)
 
     return (
@@ -52,21 +48,8 @@ export function Header({ apiStatus }: HeaderProps) {
                     </NavigationMenuList>
                 </NavigationMenu>
 
-                {/* Column 3: API Status and Future Buttons (Right Aligned) */}
                 <div className="flex justify-end items-center space-x-4">
-                    {/* API Status Indicator */}
-                    <div className="flex items-center space-x-2">
-                        <div className={`w-2 h-2 rounded-full ${
-                            apiStatus === true ? 'bg-green-500 animate-pulse' : 
-                            apiStatus === false ? 'bg-red-500' : 
-                            'bg-yellow-500 animate-pulse'
-                        }`}></div>
-                        <span className="text-sm text-[#B0BEC5]">
-                            {apiStatus === true ? 'API Connected' : 
-                             apiStatus === false ? 'API Offline' : 
-                             'Checking API...'}
-                        </span>
-                    </div>
+
                     {/* Add your future buttons here */}
                 </div>
             </div>
