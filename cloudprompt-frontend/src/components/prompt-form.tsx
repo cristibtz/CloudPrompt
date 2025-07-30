@@ -51,12 +51,12 @@ export function PromptInput({ onSubmit, apiStatus }: PromptInputProps) {
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-lg border border-[#B0BEC5]/20 p-6 w-full max-w-4xl">
+    <div className="bg-white rounded-lg shadow-lg border border-[#B0BEC5]/20 p-4 sm:p-6 w-full max-w-4xl mx-auto">
       <div className="mb-4">
-        <h2 className="text-2xl font-bold text-[#0B1C37] mb-2">
+        <h2 className="text-xl sm:text-2xl font-bold text-[#0B1C37] mb-2">
           Cloud<span className="text-[#2196F3]">Prompt</span> Assistant
         </h2>
-        <p className="text-[#B0BEC5] text-sm">
+        <p className="text-[#B0BEC5] text-xs sm:text-sm">
           Enter your cloud management commands using natural language
         </p>
       </div>
@@ -73,8 +73,8 @@ export function PromptInput({ onSubmit, apiStatus }: PromptInputProps) {
                     <textarea
                       {...field}
                       placeholder="e.g., 'List all my EC2 instances in us-east-1' or 'Create a new S3 bucket called my-data-bucket'"
-                      className="w-full min-h-[120px] p-4 text-lg border-2 border-[#B0BEC5]/30 rounded-lg resize-none focus:border-[#2196F3] focus:outline-none focus:ring-2 focus:ring-[#2196F3]/20 transition-all duration-300"
-                      rows={4}
+                      className="w-full min-h-[100px] sm:min-h-[120px] p-3 sm:p-4 text-base sm:text-lg border-2 border-[#B0BEC5]/30 rounded-lg resize-none focus:border-[#2196F3] focus:outline-none focus:ring-2 focus:ring-[#2196F3]/20 transition-all duration-300"
+                      rows={3}
                       onKeyDown={(e) => {
                         if (e.ctrlKey && e.key === 'Enter') {
                           e.preventDefault()
@@ -82,7 +82,7 @@ export function PromptInput({ onSubmit, apiStatus }: PromptInputProps) {
                         }
                       }}
                     />
-                    <div className="absolute bottom-3 right-3 text-xs text-[#B0BEC5]">
+                    <div className="absolute bottom-2 sm:bottom-3 right-2 sm:right-3 text-xs text-[#B0BEC5]">
                       {field.value?.length || 0} characters
                     </div>
                   </div>
@@ -96,11 +96,11 @@ export function PromptInput({ onSubmit, apiStatus }: PromptInputProps) {
             )}
           />
           
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-3 sm:space-y-0">
+            <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-3">
               <Button 
                 type="submit" 
-                className="bg-[#2196F3] hover:bg-[#64B5F6] text-white px-8 py-3 rounded-lg font-semibold transition-all duration-300 cursor-pointer hover:scale-105 hover:shadow-lg text-lg"
+                className="bg-[#2196F3] hover:bg-[#64B5F6] text-white px-6 sm:px-8 py-2 sm:py-3 rounded-lg font-semibold transition-all duration-300 cursor-pointer hover:scale-105 hover:shadow-lg text-base sm:text-lg w-full sm:w-auto"
                 disabled={form.formState.isSubmitting}
               >
                 {form.formState.isSubmitting ? (
@@ -117,24 +117,23 @@ export function PromptInput({ onSubmit, apiStatus }: PromptInputProps) {
               </Button>
               
               {/* API Status Indicator */}
-              <div className="flex items-center space-x-2">
+              <div className="flex items-center space-x-2 justify-center sm:justify-start">
                   <div className={`w-2 h-2 rounded-full ${
                     apiStatus === true ? 'bg-green-500 animate-pulse' : 
                     apiStatus === false ? 'bg-red-500' : 
                     'bg-yellow-500 animate-pulse'
                   }`}></div>
-                  <span className="text-sm text-[#B0BEC5]">
+                  <span className="text-xs sm:text-sm text-[#B0BEC5]">
                     {apiStatus === true ? 'API Connected' : 
                         apiStatus === false ? 'API Offline' : 
                         'Checking API...'}
                   </span>
               </div>
 
-
               {isSubmitted && (
-                <div className="flex items-center text-green-500 transition-opacity duration-500 ease-in-out">
+                <div className="flex items-center text-green-500 transition-opacity duration-500 ease-in-out justify-center sm:justify-start">
                   <svg 
-                    className="w-6 h-6 mr-1" 
+                    className="w-5 h-5 sm:w-6 sm:h-6 mr-1" 
                     fill="currentColor" 
                     viewBox="0 0 20 20"
                   >
@@ -149,11 +148,11 @@ export function PromptInput({ onSubmit, apiStatus }: PromptInputProps) {
               )}
             </div>
             
-            <div className="flex items-center space-x-2 text-sm text-[#B0BEC5]">
+            <div className="hidden sm:flex items-center space-x-2 text-xs sm:text-sm text-[#B0BEC5]">
               <kbd className="px-2 py-1 bg-[#B0BEC5]/10 rounded border text-xs">Ctrl</kbd>
               <span>+</span>
               <kbd className="px-2 py-1 bg-[#B0BEC5]/10 rounded border text-xs">Enter</kbd>
-              <span>to submit</span>
+              <span className="hidden md:inline">to submit</span>
             </div>
           </div>
         </form>

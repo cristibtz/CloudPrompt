@@ -21,7 +21,7 @@ function App() {
         setIsApiHealthy(false)
         console.error('API health check failed:', error)
         toast.error('Backend API is not available', {
-          description: `Please ensure the backend is running at ${config.apiBaseUrl}`,
+          description: `Please ensure the backend is reachable at ${config.apiBaseUrl}`,
         })
       }
     }
@@ -64,8 +64,8 @@ function App() {
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-[#E3F2FD] via-white to-[#F3E5F5]">
       <Header />
 
-      <main className="flex-1 container mx-auto p-6 flex flex-col items-center space-y-6">
-        <div className="w-full max-w-4xl space-y-6">
+      <main className="flex-1 container mx-auto p-4 sm:p-6 flex flex-col items-center space-y-4 sm:space-y-6">
+        <div className="w-full max-w-4xl space-y-4 sm:space-y-6">
           <PromptInput onSubmit={handlePromptSubmit} apiStatus={isApiHealthy} />
           <ResultsCanvas results={results} isLoading={isLoading} />
         </div>
