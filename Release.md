@@ -24,4 +24,5 @@
 - [ ] Define DB initial architecture diagram
 - [ ] Do continuous testing
 
+### v0.0.01 App arch
 ![arch-v0.0.1](photos/arch-v0.0.1.svg)
