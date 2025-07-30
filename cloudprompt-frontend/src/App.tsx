@@ -11,7 +11,6 @@ function App() {
   const [isLoading, setIsLoading] = useState(false)
   const [isApiHealthy, setIsApiHealthy] = useState<boolean | null>(null)
 
-  // Check API health on component mount
   useEffect(() => {
     const checkApiHealth = async () => {
       try {
@@ -26,8 +25,11 @@ function App() {
         })
       }
     }
-
+    
     checkApiHealth()
+    const interval = setInterval(checkApiHealth, 30000) 
+    return () => clearInterval(interval)
+    
   }, [])
 
   const handlePromptSubmit = async (prompt: string) => {
@@ -60,11 +62,11 @@ function App() {
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-[#E3F2FD] via-white to-[#F3E5F5]">
-      <Header apiStatus={isApiHealthy} />
+      <Header />
 
       <main className="flex-1 container mx-auto p-6 flex flex-col items-center space-y-6">
         <div className="w-full max-w-4xl space-y-6">
-          <PromptInput onSubmit={handlePromptSubmit} />
+          <PromptInput onSubmit={handlePromptSubmit} apiStatus={isApiHealthy} />
           <ResultsCanvas results={results} isLoading={isLoading} />
         </div>
       </main>
