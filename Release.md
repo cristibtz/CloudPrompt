@@ -14,7 +14,7 @@
     - [x] Backend
     - [x] CLI tool
     - [x] MCP server
-- [ ] Create frontend prototype
+- [x] Create frontend prototype
 - [x] Learn about API usage costs
     - [x] Cost debugging
     - [x] Cost monitoring and logging
