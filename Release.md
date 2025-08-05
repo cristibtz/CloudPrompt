@@ -1,5 +1,9 @@
 ## To do
 
+- [ ] Experiment with Proxmox and prepare to add app functionality
+    - [ ] Create test env
+    - [ ] Add basic functionality 
+
 - [ ] Improve application architecture
     - [ ] Add Database for user management
     - [ ] Add In-Memory Database for prompt history
