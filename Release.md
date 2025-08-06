@@ -1,7 +1,7 @@
 ## To do
 
 - [ ] Experiment with Proxmox and prepare to add app functionality
-    - [ ] Create test env
+    - [x] Create test env
     - [ ] Add basic functionality 
 
 - [ ] Improve application architecture
