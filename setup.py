@@ -9,19 +9,20 @@ try:
         requirements = [line.strip() for line in fh if line.strip() and not line.startswith("#")]
 except FileNotFoundError:
     requirements = [
-        "boto3",
-        "openai",
-        "rich",
-        "python-dotenv",
-        "fastapi",
-        "uvicorn",
-        "logfire",
-        "mcp",
-        "langchain",
-        "langchain_community",
-        "langchain_openai",
-        "langchain_core",
-        "pydantic_ai",
+        "boto3==1.39.14",
+        "botocore==1.39.14",
+        "dotenv==0.9.9",
+        "fastapi[standard]==0.116.1",
+        "logfire==4.0.0",
+        "logfire[langchain]==4.0.0",
+        "fastmcp==2.10.6",
+        "httpx==0.28.1",
+        "pydantic_ai==0.4.5",
+        "streamlit==1.47.1",
+        "rich==14.1.0",
+        "langchain==0.3.27",
+        "langchain_community==0.3.27",
+        "langchain_openai==0.3.28",
     ]
 
 setup(
