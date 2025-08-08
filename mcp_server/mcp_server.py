@@ -13,7 +13,7 @@ logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 )
-logger = logging.getLogger("aws_ec2_manager_mcp")
+logger = logging.getLogger("cloudprompt_mcp")
 
 http_client = httpx.AsyncClient(timeout=10.0)
 mcp = FastMCP("CloudPrompt MCP Server")
