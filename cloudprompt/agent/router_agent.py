@@ -8,7 +8,7 @@ from langchain.prompts import PromptTemplate
 from langchain_openai import ChatOpenAI
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnableLambda
-from cloudprompt.agent.agent import run_aws_agent, run_azure_agent, run_gcp_agent
+from cloudprompt.agent.agent import run_aws_agent, run_azure_agent, run_gcp_agent, run_proxmox_agent
 
 logfire.configure(
     token=os.getenv("LOGFIRE_TOKEN")
@@ -31,6 +31,7 @@ class CloudRouterAgent:
             - "aws" for Amazon Web Services (EC2, S3, Lambda, RDS, etc.)
             - "azure" for Microsoft Azure (VMs, Blob Storage, Functions, etc.)  
             - "gcp" for Google Cloud Platform (Compute Engine, Cloud Storage, etc.)
+            - "proxmox" for Proxmox
             
             If the request is not related to any cloud provider, respond with "unknown".
             
@@ -56,6 +57,8 @@ class CloudRouterAgent:
             return "azure"
         elif "gcp" in destination or "google" in destination:
             return "gcp"
+        elif "proxmox" in destination:
+            return "proxmox"
         else:
             return "unknown"
 
@@ -82,6 +85,9 @@ class CloudRouterAgent:
                 elif destination == "gcp":
                     with logfire.span('cloud_router.execute_gcp_agent'):
                         return await run_gcp_agent(user_input)
+                elif destination == "proxmox":
+                    with logfire.span('cloud_router.execute_proxmox_agent'):
+                        return await run_proxmox_agent(user_input)
                 else:
                     logfire.warn("Router: Unknown destination", destination=destination)
                     span.set_attribute("error", "unknown_destination")

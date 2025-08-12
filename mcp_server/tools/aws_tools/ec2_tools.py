@@ -55,7 +55,7 @@ def register_tools(mcp):
         Get AMI by OS name in a specific region.
         :param os_name: str - Name of the operating system (e.g., "Ubuntu Server 24.04 LTS").
         :param region_name: str -  AWS region name (default is "us-east-1").
-        :return: Dict[str, Dict[str, str]] List of AMIs for the specified OS in the given region.
+        :return: Dict[str, Dict[str, str]] - List of AMIs for the specified OS in the given region.
         '''
         region_data = AMIs.get(region_name)
         if region_data:
