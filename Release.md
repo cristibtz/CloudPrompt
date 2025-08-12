@@ -1,8 +1,8 @@
 ## To do
 
-- [ ] Experiment with Proxmox and prepare to add app functionality
+- [x] Experiment with Proxmox and prepare to add app functionality
     - [x] Create test env
-    - [ ] Add basic functionality 
+    - [x] Add basic functionality 
 
 - [ ] Improve application architecture
     - [ ] Add Database for user management
