@@ -23,6 +23,7 @@ except FileNotFoundError:
         "langchain==0.3.27",
         "langchain_community==0.3.27",
         "langchain_openai==0.3.28",
+        "proxmoxer=2.2.0"
     ]
 
 setup(
