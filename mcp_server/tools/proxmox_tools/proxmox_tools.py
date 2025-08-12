@@ -21,7 +21,7 @@ def register_tools(mcp):
         '''
         List all VMs on a Proxmox node or all nodes if no node is specified.
         :param node_name: Name of the Proxmox node to list VMs from. If not provided, lists VMs from all nodes.
-        :return: Dict[str, str] - List of VMs with their VMID, name, and status.
+        :return: List[Dict[str, str]] - List of VMs with their VMID, name, and status.
         '''
         if not node_name:
             try:

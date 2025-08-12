@@ -22,3 +22,10 @@
 | `list_s3_bucket_objects` | List all objects in a specific S3 bucket | `bucket_name: str` - Name of the S3 bucket to list objects from<br>`region_name: str = "us-east-1"` - AWS region name | `Dict[str, List[Dict[str, Union[str, int]]]]` - List of objects with their keys, sizes, and last modified dates | `list_s3_bucket_objects("my-bucket")` |
 | `delete_s3_bucket_object` | Delete a specific object from an S3 bucket | `bucket_name: str` - Name of the S3 bucket<br>`object_key: str` - Key of the object to delete<br>`region_name: str = "us-east-1"` - AWS region name | `Dict[str, str]` - Information about the deleted object or error message | `delete_s3_bucket_object("my-bucket", "my-file.txt")` |
 | `delete_s3_bucket` | Delete an S3 bucket with optional force empty | `bucket_name: str` - Name of the S3 bucket to delete<br>`force: bool = False` - Whether to force delete by emptying the bucket first<br>`region_name: str = "us-east-1"` - AWS region name | `Dict[str, str]` - Information about the deleted bucket or error message | `delete_s3_bucket("my-bucket", True)` |
+
+# Proxmox tools
+
+| Tool Name | Description | Parameters | Return Type | Example Usage |
+|-----------|-------------|------------|-------------|---------------|
+| `list_vms` | List all VMs on a Proxmox node or all nodes if no node is specified | `node_name: str = None` - Name of the Proxmox node to list VMs from. If not provided, lists VMs from all nodes |
+| `List[Dict[str, str]]` - List of VMs with their VMID, name, and status | `list_vms("node1")` |
