@@ -6,6 +6,7 @@ from fastmcp import FastMCP
 from tools.aws_tools import register_aws_tools
 from tools.azure_tools import register_azure_tools
 from tools.gcp_tools import register_gcp_tools
+from tools.proxmox_tools import register_proxmox_tools
 
 load_dotenv()
 
@@ -21,6 +22,7 @@ mcp = FastMCP("CloudPrompt MCP Server")
 register_aws_tools(mcp)
 register_azure_tools(mcp)
 register_gcp_tools(mcp)
+register_proxmox_tools(mcp)
 
 if __name__ == "__main__":
     try:
