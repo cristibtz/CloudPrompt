@@ -35,7 +35,7 @@ AMIs = {
         "os_options": {
             "ubuntu": {
                 "Ubuntu Server 24.04 LTS": "ami-05f991c49d264708f",
-                "Ubuntu Server 22.04 LTS": "ami-0987654321fedcba0"
+                "Ubuntu Server 22.04 LTS": "ami-0ec1bf4a8f92e7bd1"
             }
         }
     }
@@ -85,9 +85,9 @@ def register_tools(mcp):
         MaxCount: int,
         InstanceType: str,
         ImageId: str,
+        region_name: str = "us-east-1",
         StorageSize: int = 8,
         VolumeType: str = "gp3",
-        region_name: str = "us-east-1"
     ):
         '''
         Create an EC2 instance with specified parameters.
