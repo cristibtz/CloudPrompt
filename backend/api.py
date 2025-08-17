@@ -14,7 +14,7 @@ app.add_middleware(
         "http://127.0.0.1:3000",   # Alternative localhost
         "http://localhost:5173",   # Vite dev server
         "http://127.0.0.1:5173",   # Alternative Vite
-        "http://192.168.100.179:5173", # Local network Vite
+        "http://192.168.100.11:5173", # Local network Vite
     ],
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
