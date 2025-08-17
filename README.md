@@ -11,6 +11,8 @@
     ☁️ Automate cloud infrastructure tasks using simple LLM prompts ☁️
 </p>
 
+![Animation](photos/Animation.gif)
+
 ## Setup .env file
 ```.env
 #AWS Credentials

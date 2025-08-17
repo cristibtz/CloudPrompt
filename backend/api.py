@@ -38,7 +38,7 @@ async def execute(request: Request):
         output = result.output
         return json.loads(output)
     except json.JSONDecodeError:
-        return {"error": "Invalid JSON response from agent."}
+        return {"error": "Invalid JSON response from agent.", "received_output": output}
     except Exception as e:
             # Return the actual error message for debugging
             return {"error": f"Internal server error: {str(e)}"}
