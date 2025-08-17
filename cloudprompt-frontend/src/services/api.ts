@@ -12,9 +12,9 @@ const apiClient = axios.create({
 
 // Simple API functions
 export const api = {
-  // Execute command - send prompt and get result
-  executeCommand: async (prompt: string) => {
-    const response = await apiClient.post('/execute', { prompt })
+  // Execute command - send prompt and provider and get result
+  executeCommand: async (prompt: string, provider: string) => {
+    const response = await apiClient.post('/execute', { prompt, provider })
     return response.data
   },
 
