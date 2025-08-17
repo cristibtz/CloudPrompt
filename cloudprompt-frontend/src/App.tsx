@@ -32,26 +32,26 @@ function App() {
     
   }, [])
 
-  const handlePromptSubmit = async (prompt: string) => {
+  const handlePromptSubmit = async (prompt: string, provider: string) => {
     setIsLoading(true)
     setResults(null)
-    
+
     try {
-      console.log('Submitting prompt:', prompt)
-      
-      const response = await api.executeCommand(prompt)
-      
+      console.log('Submitting prompt:', prompt, 'Provider:', provider)
+
+      const response = await api.executeCommand(prompt, provider)
+
       // Display the raw JSON response
       setResults(JSON.stringify(response, null, 2))
-      
+
       toast.success('Command executed successfully!')
-      
+
     } catch (error: any) {
       console.error('Command execution failed:', error)
-      
+
       const errorMessage = error.response?.data?.message || error.message || 'Unknown error occurred'
       setResults(`Error: ${errorMessage}`)
-      
+
       toast.error('Command execution failed', {
         description: errorMessage,
       })
