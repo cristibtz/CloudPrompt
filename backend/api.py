@@ -2,7 +2,7 @@ import asyncio
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from cloudprompt.agent.router_agent import CloudRouterAgent
+from cloudprompt.agent.router_agent import execute_provider
 import json, ast
 
 app = FastAPI()
@@ -21,32 +21,27 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-router = CloudRouterAgent()
-
 class Request(BaseModel):
     prompt: str
-
+    provider: str
 
 @app.post("/api/v1/execute")
-async def route_and_execute(request: Request):
-
+async def execute(request: Request):
     user_input = request.prompt
-    
+    provider = request.provider
     if not user_input:
-
         return {"error": "Prompt cannot be empty."}
-
+    if not provider:
+        return {"error": "Provider cannot be empty."}
     try:
-        result = await router.route_and_execute(user_input)
-
+        result = await execute_provider(provider, user_input)
         output = result.output
-
         return json.loads(output)
     except json.JSONDecodeError:
         return {"error": "Invalid JSON response from agent."}
     except Exception as e:
-        return {"error": f"Internal server error"}
-        print(f"Error: {e}")
+            # Return the actual error message for debugging
+            return {"error": f"Internal server error: {str(e)}"}
 
 @app.get("/api/v1/health")
 async def health_check():
