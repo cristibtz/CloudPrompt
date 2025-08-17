@@ -4,7 +4,7 @@ from pydantic_ai.mcp import MCPServerSSE
 from pydantic_ai.tools import ToolDefinition
 from pydantic_ai.result import RunContext
 from dotenv import load_dotenv
-from typing import Union
+from typing import Union, Callable
 import logfire
 from rich.console import Console
 
@@ -68,6 +68,7 @@ class CloudAgentBase:
             return result
     
 
+@staticmethod
 async def filter_aws_tools(
     ctx: RunContext[None], tool_defs: list[ToolDefinition]
 ) -> Union[list[ToolDefinition], None]:
@@ -80,6 +81,7 @@ async def filter_aws_tools(
     ]
     return [tool_def for tool_def in tool_defs if tool_def.name in aws_tools]
 
+@staticmethod
 async def filter_azure_tools(
     ctx: RunContext[None], tool_defs: list[ToolDefinition]
 ) -> Union[list[ToolDefinition], None]:
@@ -89,6 +91,7 @@ async def filter_azure_tools(
     ]
     return [tool_def for tool_def in tool_defs if tool_def.name in azure_tools]
 
+@staticmethod
 async def filter_gcp_tools(
     ctx: RunContext[None], tool_defs: list[ToolDefinition]
 ) -> Union[list[ToolDefinition], None]:
@@ -98,6 +101,7 @@ async def filter_gcp_tools(
     ]
     return [tool_def for tool_def in tool_defs if tool_def.name in gcp_tools]
 
+@staticmethod
 async def filter_proxmox_tools(
     ctx: RunContext[None], tool_defs: list[ToolDefinition]
 ) -> Union[list[ToolDefinition], None]:
@@ -135,6 +139,16 @@ class ProxmoxAgent(CloudAgentBase):
         "Use the MCP tools to answer user queries as accurately as possible.\n"
     )
     TOOL_FILTER = filter_proxmox_tools
+
+    async def run(self, user_input: str):
+        # Get available tools for this agent
+        tool_defs = await self.TOOL_FILTER(None, self.server.tools)
+        print("[ProxmoxAgent] tool_defs:", tool_defs)
+        if not tool_defs:
+            print("[ProxmoxAgent] No Proxmox tools available, returning error.")
+            return type('Result', (), {'output': "No Proxmox tools are available. Please check your MCP server configuration."})()
+        print("[ProxmoxAgent] Proxmox tools found, running agent.")
+        return await super().run(user_input)
 
 # Factory functions for compatibility
 async def run_aws_agent(user_input):
