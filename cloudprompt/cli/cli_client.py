@@ -2,7 +2,7 @@ import asyncio
 import os, sys, argparse
 from cloudprompt.agent.costs import calculate_cost_from_usage, agent_usage_data
 from rich.console import Console
-from cloudprompt.agent.router_agent import CloudRouterAgent
+from cloudprompt.agent.router_agent import execute_provider
 
 console = Console()
 
@@ -10,16 +10,16 @@ async def main():
 
     parser = argparse.ArgumentParser(description="CloudPrompt CLI Client")
     parser.add_argument('-p', '--prompt', required=True, type=str, help="Prompt to run")
+    parser.add_argument('-c', '--cloud', required=True, type=str, help="Cloud provider to use (e.g., 'aws', 'gcp', 'azure', 'proxmox')")
 
     args = parser.parse_args()
     user_input = args.prompt
+    cloud_provider = args.cloud
 
     console.print(f"[bold cyan] Processing request:[/bold cyan] {user_input}")
 
-    router = CloudRouterAgent()
-
     try:
-        result = await router.route_and_execute(user_input)
+        result = await execute_provider(cloud_provider, user_input)
         # Debug
         try:
             cost_info = agent_usage_data(result)
