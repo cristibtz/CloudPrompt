@@ -20,7 +20,7 @@
         - [x] Add a way to select cloud provider
     - [ ] CLI
         - [ ] Maybe add more arguments(like credentials)
-        - [ ] Add provider parameter to specify which cloud provider to use
+        - [x] Add provider parameter to specify which cloud provider to use
     - [ ] Add credentials checks and think how to handle credentials for individual users and for the 5 cloud platforms starting with Amazon
 
 - [ ] Start creating detailed Word documentation until present progress and continuosly improve
