@@ -20,6 +20,54 @@ logfire.instrument_pydantic_ai()
 
 server = MCPServerSSE(url=MCP_SERVER_URL)
 
+class CloudAgentBase:
+    SYSTEM_PROMPT = ""
+    TOOL_FILTER: Callable = None
+
+    def __init__(self):
+        self.model = MODEL
+        self.server = server
+
+    async def run(self, user_input: str):
+        user_prompt = (
+            f"{user_input}\n"
+            "Always try to return a valid JSON format response without using '''json '''.\n"
+            "Always return the result exactly the same from the MCP server, don't modify it unless explicitly asked.\n"
+        )
+
+        # Debug info
+        console.print(f"System prompt length: {len(self.SYSTEM_PROMPT)} chars")
+        console.print(f"User prompt length: {len(user_prompt)} chars")
+        console.print(f"Total input length: {len(self.SYSTEM_PROMPT + user_prompt)} chars")
+
+        start_time = time.time()
+
+        agent = Agent(
+            name="Assistant",
+            system_prompt=self.SYSTEM_PROMPT,
+            model=self.model,
+            toolsets=[self.server],
+            prepare_tools=self.TOOL_FILTER
+        )
+
+        async with agent.run_mcp_servers():
+            console.print("Running agent...")
+
+            try:
+                result = await agent.run(user_prompt)
+            except Exception as e:
+                console.print(f"Error occurred: {e}")
+                return {"error": str(e)}
+
+            end_time = time.time()
+            duration = end_time - start_time
+
+            console.print(f"\n[bold green]✅ AGENT COMPLETED[/bold green]")
+            console.print(f"Duration: {duration:.2f} seconds")
+
+            return result
+    
+
 async def filter_aws_tools(
     ctx: RunContext[None], tool_defs: list[ToolDefinition]
 ) -> Union[list[ToolDefinition], None]:
@@ -59,180 +107,44 @@ async def filter_proxmox_tools(
     ]
     return [tool_def for tool_def in tool_defs if tool_def.name in proxmox_tools]
 
-# AWS agent
-async def run_aws_agent(user_input):
-    """Shared AWS agent function"""
+# Provider-specific agent classes
+class AWSAgent(CloudAgentBase):
     SYSTEM_PROMPT = (
         "You are a helpful assistant for AWS management.\n"
         "Use the right MCP tools to answer user queries as accurately as possible.\n"
     )
+    TOOL_FILTER = filter_aws_tools
 
-    user_prompt = f"{user_input}\n \
-    Always try to return a valid JSON format response without using '''json '''.\n \
-    Always return the result exactly the same from the MCP server, don't modify it unless explicitly asked.\n"
-    
-    # Used for debugging
-    console.print(f"System prompt length: {len(SYSTEM_PROMPT)} chars")
-    console.print(f"User prompt length: {len(user_prompt)} chars")
-    console.print(f"Total input length: {len(SYSTEM_PROMPT + user_prompt)} chars")
-
-    start_time = time.time()
-
-    agent = Agent(
-        name="Assistant",
-        system_prompt=SYSTEM_PROMPT,
-        model=MODEL,
-        toolsets=[server],
-        prepare_tools=filter_aws_tools
-    )
-    
-    async with agent.run_mcp_servers():
-        console.print("Running agent...")
-
-        try:
-            result = await agent.run(user_prompt)
-        except Exception as e:
-            console.print(f"Error occurred: {e}")
-            return {"error": str(e)}
-
-        end_time = time.time()
-        duration = end_time - start_time
-
-        console.print(f"\n[bold green]✅ AGENT COMPLETED[/bold green]")
-        console.print(f"Duration: {duration:.2f} seconds")
-
-        return result
-
-# Azure agent
-async def run_azure_agent(user_input):
-    """Shared Azure agent function"""
+class AzureAgent(CloudAgentBase):
     SYSTEM_PROMPT = (
         "You are a helpful assistant for Azure management.\n"
         "Use the right MCP tools to answer user queries as accurately as possible.\n"
     )
+    TOOL_FILTER = filter_azure_tools
 
-    user_prompt = f"{user_input}\n \
-    Always try to return a valid JSON format response without using '''json '''.\n \
-    Always return the result exactly the same from the MCP server, don't modify it unless explicitly asked.\n"
-    
-    # Used for debugging
-    console.print(f"System prompt length: {len(SYSTEM_PROMPT)} chars")
-    console.print(f"User prompt length: {len(user_prompt)} chars")
-    console.print(f"Total input length: {len(SYSTEM_PROMPT + user_prompt)} chars")
-
-    start_time = time.time()
-
-    agent = Agent(
-        name="Assistant",
-        system_prompt=SYSTEM_PROMPT,
-        model=MODEL,
-        toolsets=[server],
-        prepare_tools=filter_azure_tools
-
-    )
-    
-    async with agent.run_mcp_servers():
-        console.print("Running agent...")
-
-        try:
-            result = await agent.run(user_prompt)
-        except Exception as e:
-            console.print(f"Error occurred: {e}")
-            return {"error": str(e)}
-
-        end_time = time.time()
-        duration = end_time - start_time
-
-        console.print(f"\n[bold green]✅ AGENT COMPLETED[/bold green]")
-        console.print(f"Duration: {duration:.2f} seconds")
-
-        return result
-
-# GCP agent
-async def run_gcp_agent(user_input):
-    """Shared GCP agent function"""
+class GCPAgent(CloudAgentBase):
     SYSTEM_PROMPT = (
         "You are a helpful assistant for GCP management.\n"
         "Use the right MCP tools to answer user queries as accurately as possible.\n"
     )
+    TOOL_FILTER = filter_gcp_tools
 
-    user_prompt = f"{user_input}\n \
-    Always try to return a valid JSON format response without using '''json '''.\n \
-    Always return the result exactly the same from the MCP server, don't modify it unless explicitly asked.\n"
-    
-    # Used for debugging
-    console.print(f"System prompt length: {len(SYSTEM_PROMPT)} chars")
-    console.print(f"User prompt length: {len(user_prompt)} chars")
-    console.print(f"Total input length: {len(SYSTEM_PROMPT + user_prompt)} chars")
-
-    start_time = time.time()
-
-    agent = Agent(
-        name="Assistant",
-        system_prompt=SYSTEM_PROMPT,
-        model=MODEL,
-        toolsets=[server],
-        prepare_tools=filter_gcp_tools
-
-    )
-    
-    async with agent.run_mcp_servers():
-        console.print("Running agent...")
-
-        try:
-            result = await agent.run(user_prompt)
-        except Exception as e:
-            console.print(f"Error occurred: {e}")
-            return {"error": str(e)}
-
-        end_time = time.time()
-        duration = end_time - start_time
-
-        console.print(f"\n[bold green]✅ AGENT COMPLETED[/bold green]")
-        console.print(f"Duration: {duration:.2f} seconds")
-
-        return result
-
-# Proxmox agent
-async def run_proxmox_agent(user_input):
-    """Shared Proxmox agent function"""
+class ProxmoxAgent(CloudAgentBase):
     SYSTEM_PROMPT = (
         "You are a helpful assistant for Proxmox management.\n"
         "Use the MCP tools to answer user queries as accurately as possible.\n"
     )
+    TOOL_FILTER = filter_proxmox_tools
 
-    user_prompt = f"{user_input}\n \
-    Always try to return a valid JSON format response without using '''json '''.\n \
-    Always return the result exactly the same from the MCP server, don't modify it unless explicitly asked.\n"
-    
-    # Used for debugging
-    console.print(f"System prompt length: {len(SYSTEM_PROMPT)} chars")
-    console.print(f"User prompt length: {len(user_prompt)} chars")
-    console.print(f"Total input length: {len(SYSTEM_PROMPT + user_prompt)} chars")
+# Factory functions for compatibility
+async def run_aws_agent(user_input):
+    return await AWSAgent().run(user_input)
 
-    start_time = time.time()
+async def run_azure_agent(user_input):
+    return await AzureAgent().run(user_input)
 
-    agent = Agent(
-        name="Assistant",
-        system_prompt=SYSTEM_PROMPT,
-        model=MODEL,
-        toolsets=[server],
-        prepare_tools=filter_proxmox_tools 
-    )
-    
-    async with agent.run_mcp_servers():
-        console.print("Running agent...")
+async def run_gcp_agent(user_input):
+    return await GCPAgent().run(user_input)
 
-        try:
-            result = await agent.run(user_prompt)
-        except Exception as e:
-            console.print(f"Error occurred: {e}")
-            return {"error": str(e)}
-
-        end_time = time.time()
-        duration = end_time - start_time
-
-        console.print(f"\n[bold green]✅ AGENT COMPLETED[/bold green]")
-        console.print(f"Duration: {duration:.2f} seconds")
-
-        return result
+async def run_proxmox_agent(user_input):
+    return await ProxmoxAgent().run(user_input)
