@@ -15,37 +15,41 @@ const FormSchema = z.object({
   prompt: z.string().min(1, {
     message: "Prompt must not be empty",
   }),
+  provider: z.string().min(1, {
+    message: "Provider must be selected",
+  }),
 })
 
+
 interface PromptInputProps {
-  onSubmit: (prompt: string) => Promise<void>
+  onSubmit: (prompt: string, provider: string) => Promise<void>
   apiStatus?: boolean | null
 }
 
 export function PromptInput({ onSubmit, apiStatus }: PromptInputProps) {
   const [isSubmitted, setIsSubmitted] = useState(false)
-  
+
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
     defaultValues: {
       prompt: "",
+      provider: "aws",
     },
   })
 
   async function handleSubmit(data: z.infer<typeof FormSchema>) {
     console.log("Form submitted:", data) // Debug log
     setIsSubmitted(true)
-    
-    try {
-      await onSubmit(data.prompt)
 
+    try {
+      await onSubmit(data.prompt, data.provider)
     } catch (error) {
       console.error("Form submission error:", error)
     }
-    
+
     // Reset form after submission
-    form.reset()
-    
+    form.reset({ prompt: "", provider: "aws" })
+
     // Reset submitted state after 3 seconds
     setTimeout(() => setIsSubmitted(false), 3000)
   }
@@ -63,6 +67,35 @@ export function PromptInput({ onSubmit, apiStatus }: PromptInputProps) {
       
       <Form {...form}>
         <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+          {/* Provider Dropdown */}
+          <FormField
+            control={form.control}
+            name="provider"
+            render={({ field }) => (
+              <FormItem>
+                <FormControl>
+                  <div className="mb-2">
+                    <label htmlFor="provider" className="block text-sm font-medium text-[#0B1C37] mb-1">Cloud Provider</label>
+                    <select
+                      {...field}
+                      id="provider"
+                      className="w-full p-2 border-2 border-[#B0BEC5]/30 rounded-lg focus:border-[#2196F3] focus:outline-none focus:ring-2 focus:ring-[#2196F3]/20 transition-all duration-300"
+                    >
+                      <option value="aws">AWS</option>
+                      <option value="azure">Azure</option>
+                      <option value="gcp">GCP</option>
+                      <option value="proxmox">Proxmox</option>
+                    </select>
+                  </div>
+                </FormControl>
+                {form.formState.errors.provider && (
+                  <p className="text-red-500 text-sm mt-2">
+                    {form.formState.errors.provider.message}
+                  </p>
+                )}
+              </FormItem>
+            )}
+          />
           <FormField
             control={form.control}
             name="prompt"
