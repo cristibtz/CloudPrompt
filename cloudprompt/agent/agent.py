@@ -20,13 +20,19 @@ logfire.instrument_pydantic_ai()
 
 server = MCPServerSSE(url=MCP_SERVER_URL)
 
+
 class CloudAgentBase:
-    SYSTEM_PROMPT = ""
+    CLOUD_TYPE = "Cloud"
     TOOL_FILTER: Callable = None
 
     def __init__(self):
         self.model = MODEL
         self.server = server
+        self.SYSTEM_PROMPT = (
+            f"You are a helpful assistant for {self.CLOUD_TYPE} management.\n"
+            f"Use the right MCP tools to answer user queries as accurately as possible.\n"
+            f"Infer the right arguments for the tools based on the user input.\n"
+        )
 
     async def run(self, user_input: str):
         user_prompt = (
@@ -112,32 +118,24 @@ async def filter_proxmox_tools(
     return [tool_def for tool_def in tool_defs if tool_def.name in proxmox_tools]
 
 # Provider-specific agent classes
+
 class AWSAgent(CloudAgentBase):
-    SYSTEM_PROMPT = (
-        "You are a helpful assistant for AWS management.\n"
-        "Use the right MCP tools to answer user queries as accurately as possible.\n"
-    )
+    CLOUD_TYPE = "AWS"
     TOOL_FILTER = filter_aws_tools
 
+
 class AzureAgent(CloudAgentBase):
-    SYSTEM_PROMPT = (
-        "You are a helpful assistant for Azure management.\n"
-        "Use the right MCP tools to answer user queries as accurately as possible.\n"
-    )
+    CLOUD_TYPE = "Azure"
     TOOL_FILTER = filter_azure_tools
 
+
 class GCPAgent(CloudAgentBase):
-    SYSTEM_PROMPT = (
-        "You are a helpful assistant for GCP management.\n"
-        "Use the right MCP tools to answer user queries as accurately as possible.\n"
-    )
+    CLOUD_TYPE = "GCP"
     TOOL_FILTER = filter_gcp_tools
 
+
 class ProxmoxAgent(CloudAgentBase):
-    SYSTEM_PROMPT = (
-        "You are a helpful assistant for Proxmox management.\n"
-        "Use the MCP tools to answer user queries as accurately as possible.\n"
-    )
+    CLOUD_TYPE = "Proxmox"
     TOOL_FILTER = filter_proxmox_tools
 
     async def run(self, user_input: str):
