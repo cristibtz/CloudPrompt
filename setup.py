@@ -12,7 +12,6 @@ except FileNotFoundError:
         "boto3==1.39.14",
         "botocore==1.39.14",
         "dotenv==0.9.9",
-        "fastapi[standard]==0.116.1",
         "logfire==4.0.0",
         "logfire[langchain]==4.0.0",
         "fastmcp==2.10.6",
@@ -23,7 +22,7 @@ except FileNotFoundError:
         "langchain==0.3.27",
         "langchain_community==0.3.27",
         "langchain_openai==0.3.28",
-        "proxmoxer=2.2.0"
+        "proxmoxer==2.2.0",
     ]
 
 setup(
