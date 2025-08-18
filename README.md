@@ -13,7 +13,7 @@
 
 ![Animation](photos/Animation.gif)
 
-## Setup .env file
+## Setup .env file in root directory
 ```.env
 #AWS Credentials
 AWS_ACCESS_KEY_ID=
@@ -37,8 +37,28 @@ LANGSMITH_ENDPOINT="https://api.smith.langchain.com"
 LANGSMITH_API_KEY=""
 LANGSMITH_PROJECT=""
 ```
+## Setup .env file in backend directory
+```.env
+DB_USERNAME=cloudprompt
+DB_PASSWORD=cloudprompt
+DB_HOST=
+DB_NAME=cloudprompt
+```
 
-## Setup
+## Start database
+```bash
+docker run -d --name cloudprompt-db -e POSTGRES_USER="cloudprompt" -e POSTGRES_PASSWORD="cloudprompt" -e POSTGRES_DB="cloudprompt" -p 5432:5432 postgres:latest
+```
+
+## Setup .env file in frontend directory
+```.env
+VITE_API_BASE_URL=
+VITE_API_TIMEOUT=30000
+VITE_APP_NAME=CloudPrompt
+VITE_APP_VERSION=0.0.1
+```
+
+## Development Setup
 1. Clone the repository:
     ```bash
     git clone https://github.com/cristibtz/CloudPrompt.git
@@ -58,7 +78,9 @@ LANGSMITH_PROJECT=""
     ```
 5. Start backend API:
     ```bash
-    fastapi run backend/api.py --port 8888
+    pip install -r requirements.txt
+    alembic upgrade head
+    uvicorn app.main:app --reload --port 8888
     ```
 6. Start frontend:
     ```bash
