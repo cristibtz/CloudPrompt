@@ -5,10 +5,10 @@
     - [x] Add basic functionality 
 
 - [ ] Improve application architecture
-    - [ ] Add Database for user management
+    - [x] Add Database for user management
     - [ ] Add In-Memory Database for prompt history
     - [ ] Create Agentic architecture diagram
-    - [ ] Create Saas app diagram 
+    - [x] Create Saas app diagram 
 
 - [ ] Bring improvements
     - [ ] Agent
@@ -26,8 +26,9 @@
 - [ ] Start creating detailed Word documentation until present progress and continuosly improve
 
 ## After adding DB
-- [ ] Find ORM
+- [x] Find ORM
 - [ ] Define DB initial architecture diagram
+- [ ] Define API endpoints
 - [ ] Do continuous testing
 
 ### v0.0.01 App arch
