@@ -53,7 +53,6 @@ docker run -d --name cloudprompt-db -e POSTGRES_USER="cloudprompt" -e POSTGRES_P
 ## Setup .env file in frontend directory
 ```.env
 VITE_API_BASE_URL=
-VITE_API_TIMEOUT=30000
 VITE_APP_NAME=CloudPrompt
 VITE_APP_VERSION=0.0.1
 ```
