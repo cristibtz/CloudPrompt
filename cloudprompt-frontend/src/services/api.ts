@@ -15,12 +15,6 @@ export const api = {
   // Execute command - send prompt and provider and get result
   executeCommand: async (prompt: string, provider: string) => {
     const response = await apiClient.post('/execute', { prompt, provider })
-    return response.data
-  },
-
-  // Health check
-  healthCheck: async () => {
-    const response = await apiClient.get('/health')
-    return response.data
-  },
+    return response.data.response
+  }
 }

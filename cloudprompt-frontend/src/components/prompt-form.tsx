@@ -23,10 +23,9 @@ const FormSchema = z.object({
 
 interface PromptInputProps {
   onSubmit: (prompt: string, provider: string) => Promise<void>
-  apiStatus?: boolean | null
 }
 
-export function PromptInput({ onSubmit, apiStatus }: PromptInputProps) {
+export function PromptInput({ onSubmit }: PromptInputProps) {
   const [isSubmitted, setIsSubmitted] = useState(false)
 
   const form = useForm<z.infer<typeof FormSchema>>({
@@ -148,20 +147,6 @@ export function PromptInput({ onSubmit, apiStatus }: PromptInputProps) {
                   "Execute Command"
                 )}
               </Button>
-              
-              {/* API Status Indicator */}
-              <div className="flex items-center space-x-2 justify-center sm:justify-start">
-                  <div className={`w-2 h-2 rounded-full ${
-                    apiStatus === true ? 'bg-green-500 animate-pulse' : 
-                    apiStatus === false ? 'bg-red-500' : 
-                    'bg-yellow-500 animate-pulse'
-                  }`}></div>
-                  <span className="text-xs sm:text-sm text-[#B0BEC5]">
-                    {apiStatus === true ? 'API Connected' : 
-                        apiStatus === false ? 'API Offline' : 
-                        'Checking API...'}
-                  </span>
-              </div>
 
               {isSubmitted && (
                 <div className="flex items-center text-green-500 transition-opacity duration-500 ease-in-out justify-center sm:justify-start">
