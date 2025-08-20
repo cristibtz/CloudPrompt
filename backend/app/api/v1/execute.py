@@ -12,6 +12,8 @@ class Request(BaseModel):
 @router.post("/execute")
 async def execute(request: Request):
     
+    providers = ["aws", "azure", "gcp", "proxmox"]
+
     user_input = request.prompt
 
     provider = request.provider
@@ -38,6 +40,18 @@ async def execute(request: Request):
         )
     
     # Verify input data
+    if provider not in providers:
+        raise HTTPException(
+            status_code=400,
+            detail={
+                "success": False,
+                "error": f"Invalid provider '{provider}'. Supported providers are: {', '.join(providers)}",
+                "provider": provider,
+                "received_output": None
+            }
+        )
+    
+    
 
     try:
         
