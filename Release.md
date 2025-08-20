@@ -16,14 +16,13 @@
     - [ ] Frontend
         - [ ] Think about UX, layout of first page
         - [x] Add a way to select cloud provider
-    - [ ] CLI
-        - [ ] Maybe add more arguments(like credentials)
+    - [x] CLI
+        - [x] Maybe add more arguments(like credentials)
         - [x] Add provider parameter to specify which cloud provider to use
-    - [ ] Backend
+    - [x] Backend
         - [x] Find ORM
         - [x] Define DB initial architecture diagram
         - [x] Define API endpoints
-        - [ ] Do continuous testing
     - [ ] Add credentials checks and think how to handle credentials for individual users and for the 5 cloud platforms starting with Amazon
 
 - [ ] Start creating detailed Word documentation until present progress and continuosly improve
