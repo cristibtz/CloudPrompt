@@ -1,16 +1,16 @@
 
 from cloudprompt.agent.agent import run_aws_agent, run_azure_agent, run_gcp_agent, run_proxmox_agent
 
-async def execute_provider(provider: str, user_input: str):
+async def execute_provider(provider: str, user_input: str, credentials: dict = None):
     """Execute the correct agent based on the provider string."""
     if provider == "aws":
-        return await run_aws_agent(user_input)
+        return await run_aws_agent(user_input, credentials)
     elif provider == "azure":
-        return await run_azure_agent(user_input)
+        return await run_azure_agent(user_input, credentials)
     elif provider == "gcp":
-        return await run_gcp_agent(user_input)
+        return await run_gcp_agent(user_input, credentials)
     elif provider == "proxmox":
-        return await run_proxmox_agent(user_input)
+        return await run_proxmox_agent(user_input, credentials)
     else:
         error_msg = (
             f"Unknown provider: '{provider}'. "
