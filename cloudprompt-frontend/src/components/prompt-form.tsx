@@ -46,8 +46,7 @@ export function PromptInput({ onSubmit }: PromptInputProps) {
       console.error("Form submission error:", error)
     }
 
-    // Reset form after submission
-    form.reset({ prompt: "", provider: "aws" })
+    // Keep the form as it was submitted - don't reset
 
     // Reset submitted state after 3 seconds
     setTimeout(() => setIsSubmitted(false), 3000)
