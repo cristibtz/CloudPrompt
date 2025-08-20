@@ -34,12 +34,33 @@ class CloudAgentBase:
             f"Infer the right arguments for the tools based on the user input.\n"
         )
 
-    async def run(self, user_input: str):
+    async def run(self, user_input: str, credentials: dict = None):
         user_prompt = (
             f"{user_input}\n"
             "Always try to return a valid JSON format response without using '''json '''.\n"
             "Always return the result exactly the same from the MCP server, don't modify it unless explicitly asked.\n"
         )
+
+        # Add credentials instruction if provided
+        if credentials and self.CLOUD_TYPE == "AWS":
+            cred_instruction = "\nIMPORTANT: When calling AWS tools, use these credentials:\n"
+            if "access_key" in credentials:
+                cred_instruction += f"- aws_access_key_id: {credentials['access_key']}\n"
+            if "secret_key" in credentials:
+                cred_instruction += f"- aws_secret_access_key: {credentials['secret_key']}\n"
+            cred_instruction += "Pass these as parameters to all tool function calls.\n"
+            user_prompt = cred_instruction + user_prompt
+        
+        if credentials and self.CLOUD_TYPE == "Proxmox":
+            cred_instruction = "\nIMPORTANT: When calling Proxmox tools, use these credentials:\n"
+            if "host" in credentials:
+                cred_instruction += f"- proxmox_host: {credentials['host']}\n"
+            if "username" in credentials:
+                cred_instruction += f"- proxmox_username: {credentials['username']}\n"
+            if "password" in credentials:
+                cred_instruction += f"- proxmox_password: {credentials['password']}\n"
+            cred_instruction += "Pass these as parameters to all tool function calls.\n"
+            user_prompt = cred_instruction + user_prompt
 
         # Debug info
         console.print(f"System prompt length: {len(self.SYSTEM_PROMPT)} chars")
@@ -136,14 +157,14 @@ class ProxmoxAgent(CloudAgentBase):
     TOOL_FILTER = filter_proxmox_tools
 
 # Factory functions for compatibility
-async def run_aws_agent(user_input):
-    return await AWSAgent().run(user_input)
+async def run_aws_agent(user_input, credentials: dict = None):
+    return await AWSAgent().run(user_input, credentials)
 
-async def run_azure_agent(user_input):
-    return await AzureAgent().run(user_input)
+async def run_azure_agent(user_input, credentials: dict = None):
+    return await AzureAgent().run(user_input, credentials)
 
-async def run_gcp_agent(user_input):
-    return await GCPAgent().run(user_input)
+async def run_gcp_agent(user_input, credentials: dict = None):
+    return await GCPAgent().run(user_input, credentials)
 
-async def run_proxmox_agent(user_input):
-    return await ProxmoxAgent().run(user_input)
+async def run_proxmox_agent(user_input, credentials: dict = None):
+    return await ProxmoxAgent().run(user_input, credentials)
