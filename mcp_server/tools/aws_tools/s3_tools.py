@@ -9,17 +9,30 @@ def register_tools(mcp):
     @mcp.tool()
     async def create_s3_bucket(
         bucket_name: str,
-        region_name: str = "us-east-1"
+        region_name: str = "us-east-1",
+        aws_access_key_id: str = None,
+        aws_secret_access_key: str = None
     ):
         '''
         Create an S3 bucket in a specific region.
         :param bucket_name: str - Name of the S3 bucket to create.
         :param region_name: str - AWS region name (default is "us-east-1").
+        :param aws_access_key_id: str - AWS Access Key ID (optional, uses environment if not provided).
+        :param aws_secret_access_key: str - AWS Secret Access Key (optional, uses environment if not provided).
         :return: Dict[str, str] - Information about the created bucket containing bucket_name and location.
         '''
         logger.info(f"Creating S3 bucket: {bucket_name} in region {region_name}")
         try:
-            s3 = boto3.client('s3', region_name=region_name)
+            # Create boto3 client with provided credentials or fall back to environment/default
+            if aws_access_key_id and aws_secret_access_key:
+                s3 = boto3.client(
+                    's3', 
+                    region_name=region_name,
+                    aws_access_key_id=aws_access_key_id,
+                    aws_secret_access_key=aws_secret_access_key
+                )
+            else:
+                s3 = boto3.client('s3', region_name=region_name)
             if region_name == "us-east-1":
                 response = s3.create_bucket(Bucket=bucket_name)
             else:
@@ -40,11 +53,15 @@ def register_tools(mcp):
     @mcp.tool()
     async def list_s3_buckets(
         region_name: str = "us-east-1",
-        check_empty: bool = False
+        check_empty: bool = False,
+        aws_access_key_id: str = None,
+        aws_secret_access_key: str = None
     ):
         '''
         List all S3 buckets in a specific region.
         :param region_name: str - AWS region name (default is "us-east-1").
+        :param aws_access_key_id: str - AWS Access Key ID (optional, uses environment if not provided).
+        :param aws_secret_access_key: str - AWS Secret Access Key (optional, uses environment if not provided).
         :param check_empty: bool - Whether to check if buckets are empty (default is True).
         :return: Dict[str, List[Dict[str, str]]] - List of buckets with their names, creation dates, and empty status.
         '''
@@ -52,7 +69,16 @@ def register_tools(mcp):
         logger.info(f"Listing S3 buckets in region: {region_name}")
 
         try:
-            s3 = boto3.client('s3', region_name=region_name)
+            # Create S3 client with optional credentials
+            if aws_access_key_id and aws_secret_access_key:
+                s3 = boto3.client(
+                    's3',
+                    region_name=region_name,
+                    aws_access_key_id=aws_access_key_id,
+                    aws_secret_access_key=aws_secret_access_key
+                )
+            else:
+                s3 = boto3.client('s3', region_name=region_name)
             response = s3.list_buckets(BucketRegion=region_name)
         except ClientError as e:
             error_msg = str(e)
@@ -98,18 +124,31 @@ def register_tools(mcp):
     @mcp.tool()
     async def list_s3_bucket_objects(
         bucket_name: str,
-        region_name: str = "us-east-1"
+        region_name: str = "us-east-1",
+        aws_access_key_id: str = None,
+        aws_secret_access_key: str = None
     ):
         '''
         List all objects in a specific S3 bucket.
         :param bucket_name: str - Name of the S3 bucket to list objects from.
         :param region_name: str - AWS region name (default is "us-east-1").
+        :param aws_access_key_id: str - AWS Access Key ID (optional, uses environment if not provided).
+        :param aws_secret_access_key: str - AWS Secret Access Key (optional, uses environment if not provided).
         :return: Dict[str, List[Dict[str, Union[str, int]]]] - List of objects with their keys and sizes.
         '''
         logger.info(f"Listing objects in S3 bucket: {bucket_name} in region {region_name}")
         
-        try:        
-            s3 = boto3.client('s3', region_name=region_name)
+        try:
+            # Create S3 client with optional credentials
+            if aws_access_key_id and aws_secret_access_key:
+                s3 = boto3.client(
+                    's3',
+                    region_name=region_name,
+                    aws_access_key_id=aws_access_key_id,
+                    aws_secret_access_key=aws_secret_access_key
+                )
+            else:
+                s3 = boto3.client('s3', region_name=region_name)
             response = s3.list_objects_v2(Bucket=bucket_name)
             if 'Contents' not in response:
                 return {"objects": []}
@@ -134,19 +173,32 @@ def register_tools(mcp):
     async def delete_s3_bucket_object(
         bucket_name: str,
         object_key: str,
-        region_name: str = "us-east-1"
+        region_name: str = "us-east-1",
+        aws_access_key_id: str = None,
+        aws_secret_access_key: str = None
     ):
         '''
         Delete a specific object from an S3 bucket.
         :param bucket_name: str - Name of the S3 bucket.
         :param object_key: str - Key of the object to delete.
         :param region_name: str - AWS region name (default is "us-east-1").
+        :param aws_access_key_id: str - AWS Access Key ID (optional, uses environment if not provided).
+        :param aws_secret_access_key: str - AWS Secret Access Key (optional, uses environment if not provided).
         :return: Dict[str, str] - Information about the deleted object or error message.
         '''
         logger.info(f"Deleting object {object_key} from S3 bucket: {bucket_name} in region {region_name}")
         
         try:
-            s3 = boto3.client('s3', region_name=region_name)
+            # Create S3 client with optional credentials
+            if aws_access_key_id and aws_secret_access_key:
+                s3 = boto3.client(
+                    's3',
+                    region_name=region_name,
+                    aws_access_key_id=aws_access_key_id,
+                    aws_secret_access_key=aws_secret_access_key
+                )
+            else:
+                s3 = boto3.client('s3', region_name=region_name)
             
             try:
                 s3.head_object(Bucket=bucket_name, Key=object_key)
@@ -175,19 +227,32 @@ def register_tools(mcp):
     async def delete_s3_bucket(
         bucket_name: str,
         force: bool = False,
-        region_name: str = "us-east-1"
+        region_name: str = "us-east-1",
+        aws_access_key_id: str = None,
+        aws_secret_access_key: str = None
     ):
         '''
         Delete an S3 bucket. If force is True, it will empty the bucket before deletion.
         :param bucket_name: str - Name of the S3 bucket to delete.
         :param force: bool - Whether to force delete by emptying the bucket first (default is False).
         :param region_name: str - AWS region name (default is "us-east-1").
+        :param aws_access_key_id: str - AWS Access Key ID (optional, uses environment if not provided).
+        :param aws_secret_access_key: str - AWS Secret Access Key (optional, uses environment if not provided).
         :return: Dict[str, str] - Information about the deleted bucket or error message.
         '''
         logger.info(f"Deleting S3 bucket: {bucket_name} in region {region_name}")
         
         try:
-            s3 = boto3.client('s3', region_name=region_name)
+            # Create S3 client with optional credentials
+            if aws_access_key_id and aws_secret_access_key:
+                s3 = boto3.client(
+                    's3',
+                    region_name=region_name,
+                    aws_access_key_id=aws_access_key_id,
+                    aws_secret_access_key=aws_secret_access_key
+                )
+            else:
+                s3 = boto3.client('s3', region_name=region_name)
             if force:
                 # Empty the bucket first
                 logger.info(f"Force delete enabled - emptying bucket {bucket_name} first")

@@ -88,6 +88,8 @@ def register_tools(mcp):
         region_name: str = "us-east-1",
         StorageSize: int = 8,
         VolumeType: str = "gp3",
+        aws_access_key_id: str = None,
+        aws_secret_access_key: str = None
     ):
         '''
         Create an EC2 instance with specified parameters.
@@ -98,11 +100,23 @@ def register_tools(mcp):
         :param StorageSize: int - Size of the root volume in GB (default is 8).
         :param VolumeType: str - Type of volume to create (default is "gp3").
         :param region_name: str -  AWS region name (default is "us-east-1").
+        :param aws_access_key_id: str - AWS Access Key ID (optional, uses environment if not provided).
+        :param aws_secret_access_key: str - AWS Secret Access Key (optional, uses environment if not provided).
         :return:  Dict[str, List[Dict[str, str]]] - Information about the created instances.
         '''
         logger.info(f"Creating EC2 instance: MinCount={MinCount}, MaxCount={MaxCount}, InstanceType={InstanceType}, ImageId={ImageId}, StorageSize={StorageSize}, VolumeType={VolumeType}, region={region_name}")
         try:
-            ec2 = boto3.resource('ec2', region_name=region_name)
+            # Create boto3 resource with provided credentials or fall back to environment/default
+            if aws_access_key_id and aws_secret_access_key:
+                ec2 = boto3.resource(
+                    'ec2', 
+                    region_name=region_name,
+                    aws_access_key_id=aws_access_key_id,
+                    aws_secret_access_key=aws_secret_access_key
+                )
+            else:
+                ec2 = boto3.resource('ec2', region_name=region_name)
+                
             instances = ec2.create_instances(
                 ImageId=ImageId,
                 MinCount=MinCount,
@@ -135,17 +149,31 @@ def register_tools(mcp):
     @mcp.tool()
     async def stop_ec2_instance(
         instance_id: str,
-        region_name: str = "us-east-1"
+        region_name: str = "us-east-1",
+        aws_access_key_id: str = None,
+        aws_secret_access_key: str = None
     ):
         '''
         Stop an EC2 instance by its ID.
         :param instance_id: str - ID of the EC2 instance to stop.
         :param region_name: str - AWS region name (default is "us-east-1").
+        :param aws_access_key_id: str - AWS Access Key ID (optional, uses environment if not provided).
+        :param aws_secret_access_key: str - AWS Secret Access Key (optional, uses environment if not provided).
         :return: Dict[str, str] - Information about the stopped instance.
         '''
         logger.info(f"Stopping EC2 instance: {instance_id} in region {region_name}")
         try:
-            ec2 = boto3.resource('ec2', region_name=region_name)
+            # Create boto3 resource with provided credentials or fall back to environment/default
+            if aws_access_key_id and aws_secret_access_key:
+                ec2 = boto3.resource(
+                    'ec2', 
+                    region_name=region_name,
+                    aws_access_key_id=aws_access_key_id,
+                    aws_secret_access_key=aws_secret_access_key
+                )
+            else:
+                ec2 = boto3.resource('ec2', region_name=region_name)
+                
             instance = ec2.Instance(instance_id)
             instance.stop()
         except ClientError as e:
@@ -157,16 +185,31 @@ def register_tools(mcp):
 
     @mcp.tool()
     async def list_ec2_instances(
-        region_name: str = "us-east-1"
+        region_name: str = "us-east-1",
+        aws_access_key_id: str = None,
+        aws_secret_access_key: str = None
     ):
         '''
         List all EC2 instances in a specific region.
         :param region_name: str - AWS region name (default is "us-east-1").
+        :param aws_access_key_id: str - AWS Access Key ID (optional, uses environment if not provided).
+        :param aws_secret_access_key: str - AWS Secret Access Key (optional, uses environment if not provided).
         :return: Dict[str, List[Dict[str, str]]] - List of all EC2 instances in the specified region. 
         '''
         logger.info(f"Listing all EC2 instances in region {region_name}")
         try:
-            ec2 = boto3.client('ec2', region_name=region_name)
+            # Create boto3 client with provided credentials or fall back to environment/default
+            if aws_access_key_id and aws_secret_access_key:
+                ec2 = boto3.client(
+                    'ec2', 
+                    region_name=region_name,
+                    aws_access_key_id=aws_access_key_id,
+                    aws_secret_access_key=aws_secret_access_key
+                )
+            else:
+                # Fall back to environment variables or default credential chain
+                ec2 = boto3.client('ec2', region_name=region_name)
+                
             response = ec2.describe_instances()
         except ClientError as e:
             logger.error(f"Error listing EC2 instances: {e}")
@@ -187,17 +230,31 @@ def register_tools(mcp):
     @mcp.tool()
     async def list_ec2_instance(
         instance_id: str,
-        region_name: str = "us-east-1"
+        region_name: str = "us-east-1",
+        aws_access_key_id: str = None,
+        aws_secret_access_key: str = None
     ):
         '''
         Get details of a specific EC2 instance by its ID.
         :param instance_id: str - ID of the EC2 instance to retrieve details for.
         :param region_name: str - AWS region name (default is "us-east-1").
+        :param aws_access_key_id: str - AWS Access Key ID (optional, uses environment if not provided).
+        :param aws_secret_access_key: str - AWS Secret Access Key (optional, uses environment if not provided).
         :return: Dict[str, List[Dict[str, str]]] - Details of the specified EC2 instance.
         '''
         logger.info(f"Getting details for EC2 instance: {instance_id} in region {region_name}")
         try:
-            ec2 = boto3.client('ec2', region_name=region_name)
+            # Create boto3 client with provided credentials or fall back to environment/default
+            if aws_access_key_id and aws_secret_access_key:
+                ec2 = boto3.client(
+                    'ec2', 
+                    region_name=region_name,
+                    aws_access_key_id=aws_access_key_id,
+                    aws_secret_access_key=aws_secret_access_key
+                )
+            else:
+                ec2 = boto3.client('ec2', region_name=region_name)
+                
             response = ec2.describe_instances(InstanceIds=[instance_id])
         except ClientError as e:
             logger.error(f"Error getting details for EC2 instance {instance_id}: {e}")
@@ -218,17 +275,31 @@ def register_tools(mcp):
     @mcp.tool()
     async def start_ec2_instance(
         instance_id: str,
-        region_name: str = "us-east-1"
+        region_name: str = "us-east-1",
+        aws_access_key_id: str = None,
+        aws_secret_access_key: str = None
     ):
         '''
         Start an EC2 instance by its ID.
         :param instance_id: str - ID of the EC2 instance to start.
         :param region_name: str - AWS region name (default is "us-east-1").
+        :param aws_access_key_id: str - AWS Access Key ID (optional, uses environment if not provided).
+        :param aws_secret_access_key: str - AWS Secret Access Key (optional, uses environment if not provided).
         :return: Dict[str, str] - Information about the started instance.
         '''
         logger.info(f"Starting EC2 instance: {instance_id} in region {region_name}")
         try:
-            ec2 = boto3.resource('ec2', region_name=region_name)
+            # Create boto3 resource with provided credentials or fall back to environment/default
+            if aws_access_key_id and aws_secret_access_key:
+                ec2 = boto3.resource(
+                    'ec2', 
+                    region_name=region_name,
+                    aws_access_key_id=aws_access_key_id,
+                    aws_secret_access_key=aws_secret_access_key
+                )
+            else:
+                ec2 = boto3.resource('ec2', region_name=region_name)
+                
             instance = ec2.Instance(instance_id)
             instance.start()
         except ClientError as e:
@@ -241,17 +312,31 @@ def register_tools(mcp):
     @mcp.tool()
     async def terminate_ec2_instance(
         instance_id: str,
-        region_name: str = "us-east-1"
+        region_name: str = "us-east-1",
+        aws_access_key_id: str = None,
+        aws_secret_access_key: str = None
     ):
         '''
         Terminate an EC2 instance by its ID.
         :param instance_id: str -  ID of the EC2 instance to terminate.
         :param region_name: str - AWS region name (default is "us-east-1").
+        :param aws_access_key_id: str - AWS Access Key ID (optional, uses environment if not provided).
+        :param aws_secret_access_key: str - AWS Secret Access Key (optional, uses environment if not provided).
         :return: Dict[str, str] Information about the terminated instance.
         '''
         logger.info(f"Terminating EC2 instance: {instance_id} in region {region_name}")
         try:
-            ec2 = boto3.resource('ec2', region_name=region_name)
+            # Create boto3 resource with provided credentials or fall back to environment/default
+            if aws_access_key_id and aws_secret_access_key:
+                ec2 = boto3.resource(
+                    'ec2', 
+                    region_name=region_name,
+                    aws_access_key_id=aws_access_key_id,
+                    aws_secret_access_key=aws_secret_access_key
+                )
+            else:
+                ec2 = boto3.resource('ec2', region_name=region_name)
+                
             instance = ec2.Instance(instance_id)
             instance.terminate()
         except ClientError as e:
