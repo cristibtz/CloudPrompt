@@ -1,6 +1,7 @@
 from fastapi import APIRouter, HTTPException
 from cloudprompt.agent.router_agent import execute_provider
 from pydantic import BaseModel
+from typing import Optional, Dict, Any
 import json
 
 router = APIRouter()
@@ -8,6 +9,7 @@ router = APIRouter()
 class Request(BaseModel):
     prompt: str
     provider: str
+    credentials: Optional[Dict[str, Any]] = None
 
 @router.post("/execute")
 async def execute(request: Request):
@@ -51,11 +53,9 @@ async def execute(request: Request):
             }
         )
     
-    
-
     try:
         
-        result = await execute_provider(provider, user_input)
+        result = await execute_provider(provider, user_input, request.credentials)
         output = result.output
         
         # Try to parse as JSON first
