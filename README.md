@@ -57,6 +57,11 @@ VITE_APP_NAME=CloudPrompt
 VITE_APP_VERSION=0.0.1
 ```
 
+## CLI Client Usage
+```bash
+python3 cloudprompt/cli/cli_client.py -p "List ec2 instances" -c "aws"
+```
+
 ## Development Setup
 1. Clone the repository:
     ```bash
@@ -78,6 +83,7 @@ VITE_APP_VERSION=0.0.1
 5. Start backend API:
     ```bash
     pip install -r requirements.txt
+    alembic revision --autogenerate -m "initial_migration"
     alembic upgrade head
     uvicorn app.main:app --reload --host 0.0.0.0 --port 8888
     ```
