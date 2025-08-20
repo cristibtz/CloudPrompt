@@ -123,30 +123,17 @@ class AWSAgent(CloudAgentBase):
     CLOUD_TYPE = "AWS"
     TOOL_FILTER = filter_aws_tools
 
-
 class AzureAgent(CloudAgentBase):
     CLOUD_TYPE = "Azure"
     TOOL_FILTER = filter_azure_tools
-
 
 class GCPAgent(CloudAgentBase):
     CLOUD_TYPE = "GCP"
     TOOL_FILTER = filter_gcp_tools
 
-
 class ProxmoxAgent(CloudAgentBase):
     CLOUD_TYPE = "Proxmox"
     TOOL_FILTER = filter_proxmox_tools
-
-    async def run(self, user_input: str):
-        # Get available tools for this agent
-        tool_defs = await self.TOOL_FILTER(None, self.server.tools)
-        print("[ProxmoxAgent] tool_defs:", tool_defs)
-        if not tool_defs:
-            print("[ProxmoxAgent] No Proxmox tools available, returning error.")
-            return type('Result', (), {'output': "No Proxmox tools are available. Please check your MCP server configuration."})()
-        print("[ProxmoxAgent] Proxmox tools found, running agent.")
-        return await super().run(user_input)
 
 # Factory functions for compatibility
 async def run_aws_agent(user_input):
