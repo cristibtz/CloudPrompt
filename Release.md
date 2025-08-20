@@ -4,10 +4,8 @@
     - [x] Create test env
     - [x] Add basic functionality 
 
-- [ ] Improve application architecture
+- [x] Improve application architecture
     - [x] Add Database for user management
-    - [ ] Add In-Memory Database for prompt history
-    - [ ] Create Agentic architecture diagram
     - [x] Create Saas app diagram 
 
 - [ ] Bring improvements
@@ -23,8 +21,8 @@
         - [x] Add provider parameter to specify which cloud provider to use
     - [ ] Backend
         - [x] Find ORM
-        - [ ] Define DB initial architecture diagram
-        - [ ] Define API endpoints
+        - [x] Define DB initial architecture diagram
+        - [x] Define API endpoints
         - [ ] Do continuous testing
     - [ ] Add credentials checks and think how to handle credentials for individual users and for the 5 cloud platforms starting with Amazon
 
