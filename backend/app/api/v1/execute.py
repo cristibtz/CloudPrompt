@@ -17,9 +17,25 @@ async def execute(request: Request):
     provider = request.provider
     
     if not user_input:
-        return {"response": "Prompt cannot be empty."}
+        raise HTTPException(
+            status_code=400,
+            detail={
+                "success": False,
+                "error": "Prompt cannot be empty",
+                "provider": provider,
+                "received_output": None
+            }
+        )
     if not provider:
-        return {"response": "Provider cannot be empty."}
+        raise HTTPException(
+            status_code=400,
+            detail={
+                "success": False,
+                "error": "Provider cannot be empty",
+                "provider": None,
+                "received_output": None
+            }
+        )
     
     # Verify input data
 
@@ -27,12 +43,34 @@ async def execute(request: Request):
         
         result = await execute_provider(provider, user_input)
         output = result.output
-        return {"response": json.loads(output)}
         
-    except json.JSONDecodeError:
-        return {"response": "Invalid JSON response from agent.", "received_output": output}
+        # Try to parse as JSON first
+        try:
+            parsed_response = json.loads(output)
+            return {
+                "success": True,
+                "response": parsed_response,
+                "provider": provider
+            }
+        except json.JSONDecodeError:
+            # If it's not JSON, treat it as plain text response (this is valid!)
+            return {
+                "success": True,
+                "response": {"message": output},
+                "provider": provider,
+                "is_plain_text": True
+            }
+    except HTTPException:
+        # Re-raise HTTP exceptions
+        raise
     except Exception as e:
-        # Return the actual error message for debugging
-        return HTTPException(
+        # Return structured error with details
+        raise HTTPException(
             status_code=500,
-            detail=f"An error occurred while executing the command: {str(e)}")
+            detail={
+                "success": False,
+                "error": f"Internal server error: {str(e)}",
+                "provider": provider,
+                "received_output": None
+            }
+        )
