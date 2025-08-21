@@ -33,12 +33,16 @@ def register_tools(mcp):
         if user and '@' not in user:
             user = f"{user}@pam"
 
-        proxmox = ProxmoxAPI(
-            host=proxmox_host or os.getenv('PROXMOX_HOST'),
-            user=user,
-            password=proxmox_pass or os.getenv('PROXMOX_PASS'),
-            verify_ssl=False
-        )
+        try:
+            proxmox = ProxmoxAPI(
+                host=proxmox_host or os.getenv('PROXMOX_HOST'),
+                user=user,
+                password=proxmox_pass or os.getenv('PROXMOX_PASS'),
+                verify_ssl=False
+            )
+        except Exception as e:
+            logger.error(f"Error connecting to Proxmox: {e}")
+            return {"error": str(e)}
 
         if not node_name:
             try:
