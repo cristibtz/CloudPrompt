@@ -8,13 +8,13 @@
     - [x] Add Database for user management
     - [x] Create Saas app diagram 
 
-- [ ] Bring improvements
+- [x] Bring improvements
     - [x] Agent
         - [x] Evaluate best way to handle cloud prompt routing
-    - [ ] MCP Server
-        - [ ] Researching how to add another cloud
-    - [ ] Frontend
-        - [ ] Think about UX, layout of first page
+    - [x] MCP Server
+        - [x] Researching how to add another cloud
+    - [x] Frontend
+        - [x] Think about UX, layout of first page
         - [x] Add a way to select cloud provider
     - [x] CLI
         - [x] Maybe add more arguments(like credentials)
@@ -23,9 +23,9 @@
         - [x] Find ORM
         - [x] Define DB initial architecture diagram
         - [x] Define API endpoints
-    - [ ] Add credentials checks and think how to handle credentials for individual users and for the 5 cloud platforms starting with Amazon
+    - [x] Add credentials checks and think how to handle credentials for individual users and for the 5 cloud platforms starting with Amazon - Pass credentials to agent via prompt and it will inject them into MCP server tools
 
-- [ ] Start creating detailed Word documentation until present progress and continuosly improve
+- [x] Start creating detailed Word documentation until present progress and continuosly improve
 
-### v0.0.01 App arch
-![arch-v0.0.1](photos/arch-v0.0.1.svg)
+### v0.0.2 App arch
+![arch-v0.0.2](photos/app-architecture-v0.0.2.drawio.svg)

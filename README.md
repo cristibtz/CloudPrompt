@@ -57,11 +57,6 @@ VITE_APP_NAME=CloudPrompt
 VITE_APP_VERSION=0.0.1
 ```
 
-## CLI Client Usage
-```bash
-python3 cloudprompt/cli/cli_client.py -p "List ec2 instances" -c "aws"
-```
-
 ## Development Setup
 1. Clone the repository:
     ```bash
@@ -97,3 +92,8 @@ python3 cloudprompt/cli/cli_client.py -p "List ec2 instances" -c "aws"
     ```bash
     python3 cloudprompt/cli/cli_tool.py # Or 'cloudprompt -p 'PROMPT' -c 'CLOUD PROVIDER'
     ```
+
+## CLI Client Usage
+```bash
+python3 cloudprompt/cli/cli_client.py -p "List ec2 instances" -c "aws"
+```
