@@ -15,7 +15,7 @@ load_dotenv()
 MODEL = os.getenv("MODEL")
 MCP_SERVER_URL = "http://localhost:8000/sse"
 
-logfire.configure(token=os.getenv("LOGFIRE_TOKEN"))
+logfire.configure(token=os.getenv("LOGFIRE_TOKEN"), scrubbing=False)
 logfire.instrument_pydantic_ai()
 
 server = MCPServerSSE(url=MCP_SERVER_URL)
@@ -102,8 +102,8 @@ async def filter_aws_tools(
     """Filter to only AWS tools"""
     aws_tools = [
         "create_ec2_instance", "start_ec2_instance", "stop_ec2_instance", 
-        "terminate_ec2_instance", "list_ec2_instances", "get_ami_by_os", 
-        "get_default_ami", "create_s3_bucket", "delete_s3_bucket", "delete_s3_bucket_object",
+        "terminate_ec2_instance", "list_ec2_instances", "get_amis", 
+        "create_s3_bucket", "delete_s3_bucket", "delete_s3_bucket_object",
         "list_s3_buckets", "list_s3_bucket_objects"
     ]
     return [tool_def for tool_def in tool_defs if tool_def.name in aws_tools]
