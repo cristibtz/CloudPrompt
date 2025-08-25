@@ -2,82 +2,150 @@ import boto3
 from botocore.exceptions import ClientError
 import logging
 
-AMIs = {
-    "us-east-1": {
-        "default": "ami-020cba7c55df1f615",
-        "os_options": {
-            "ubuntu": {
-                "Ubuntu Server 24.04 LTS": "ami-020cba7c55df1f615",
-                "Ubuntu Server 22.04 LTS": "ami-0a7d80731ae1b2435"
-            }
-        }
-    },
-    "us-east-2": {
-        "default": "ami-0d1b5a8c13042c939",
-        "os_options": {
-            "ubuntu": {
-                "Ubuntu Server 24.04 LTS": "ami-0d1b5a8c13042c939",
-                "Ubuntu Server 22.04 LTS": "ami-0b05d988257befbbe"
-            }
-        }
-    },
-    "us-west-1": {
-        "default": "ami-014e30c8a36252ae5",
-        "os_options": {
-            "ubuntu": {
-                "Ubuntu Server 24.04 LTS": "ami-014e30c8a36252ae5",
-                "Ubuntu Server 22.04 LTS": "ami-043b59f1d11f8f189"
-            }
-        }
-    },
-    "us-west-2": {
-        "default": "ami-05f991c49d264708f",
-        "os_options": {
-            "ubuntu": {
-                "Ubuntu Server 24.04 LTS": "ami-05f991c49d264708f",
-                "Ubuntu Server 22.04 LTS": "ami-0ec1bf4a8f92e7bd1"
-            }
-        }
-    }
+OFFICIAL_OWNERS = {
+    "Amazon Linux": ["amazon"],            # alias supported
+    "Ubuntu":       ["099720109477"],      # Canonical
+    "Debian":       ["136693071363"],      # Debian
+    "Red Hat":      ["309956199498"],      # Red Hat
+    "SUSE Linux":   ["013907871322"],      # SUSE
 }
 
+NAME_PATTERNS = {
+    "Amazon Linux": [
+        "amzn2-ami-hvm-*-x86_64-*",
+        "AL2023-AMI-*-x86_64",
+        "al2023-ami-*-x86_64",
+    ],
+    "Ubuntu": [
+        "ubuntu/images/hvm-ssd/ubuntu-*-amd64-server-*",
+        "ubuntu/images/hvm-ssd-gp3/ubuntu-*-amd64-server-*",
+    ],
+    "Debian": [
+        "debian-*-amd64-*",
+    ],
+    "Red Hat": [
+        "RHEL-*-x86_64-*",
+    ],
+    "SUSE Linux": [
+        "suse-sles-12-sp*-x86_64*",
+        "suse-sles-15-sp*-x86_64*",
+    ],
+}
+
+ordered_distros = ["Amazon Linux", "Ubuntu", "Debian", "Red Hat", "SUSE Linux"]
 
 logger = logging.getLogger("aws_ec2_tools_mcp")
 
 def register_tools(mcp):
 
     @mcp.tool()
-    async def get_ami_by_os(
-        os_name: str,
+    async def get_amis(
         region_name: str = "us-east-1",
+        aws_access_key_id: str = None,
+        aws_secret_access_key: str = None
     ):
         '''
-        Get AMI by OS name in a specific region.
-        :param os_name: str - Name of the operating system (e.g., "Ubuntu Server 24.04 LTS").
-        :param region_name: str -  AWS region name (default is "us-east-1").
-        :return: Dict[str, Dict[str, str]] - List of AMIs for the specified OS in the given region.
-        '''
-        region_data = AMIs.get(region_name)
-        if region_data:
-            os_options = region_data.get("os_options", {})
-            if os_name.lower() in os_options:
-                logger.info(f"Found AMIs for OS '{os_name}' in region {region_name}")
-                logger.info(f"AMIs list: {os_options[os_name.lower()]}")
-                return {"AMIs": os_options[os_name.lower()]}
-
-    @mcp.tool()
-    async def get_default_ami(region_name: str = "us-east-1"):
-        '''
-        Get the default AMI for a specific region.
+        Get list of AMIs to create EC2 instances from.
         :param region_name: str - AWS region name (default is "us-east-1").
-        :return: Dict[str, str] - AMI ID for the specified region.   
+        :param aws_access_key_id: str - AWS Access Key ID (optional, uses environment if not provided).
+        :param aws_secret_access_key: str - AWS Secret Access Key (optional, uses environment if not provided).
+        :return: Dict with region, total, and list of AMIs.
         '''
-        region_data = AMIs.get(region_name)
-        if region_data:
-            AMI = region_data["default"]
-            logger.info(f"Fetching default AMI for region {region_name}: {AMI}")
-            return {"AMI": AMI}
-        return "Not found"
+        max_total = 15
+        logger.info(f"Fetching Linux free-tier-friendly AMIs for region {region_name} (max_total={max_total})")
+        try:
+            # Create EC2 client with optional credentials
+            if aws_access_key_id and aws_secret_access_key:
+                ec2 = boto3.client(
+                    'ec2',
+                    region_name=region_name,
+                    aws_access_key_id=aws_access_key_id,
+                    aws_secret_access_key=aws_secret_access_key
+                )
+            else:
+                ec2 = boto3.client('ec2', region_name=region_name)
+
+            quota = max(1, max_total // len(ordered_distros))
+
+            def fetch_for_distro(distro: str) -> list[dict]:
+                owners = OFFICIAL_OWNERS.get(distro, [])
+                name_patterns = NAME_PATTERNS.get(distro, [])
+                if not owners or not name_patterns:
+                    return []
+
+                # Query official owners with broad, future-proof name patterns
+                resp = ec2.describe_images(
+                    Owners=owners,
+                    Filters=[
+                        {"Name": "state", "Values": ["available"]},
+                        {"Name": "name", "Values": name_patterns},
+                        {"Name": "architecture", "Values": ["x86_64"]},
+                        {"Name": "virtualization-type", "Values": ["hvm"]},
+                        {"Name": "root-device-type", "Values": ["ebs"]},
+                    ],
+                )
+                images = resp.get('Images', [])
+                images.sort(key=lambda i: i.get('CreationDate', ''), reverse=True)
+
+                out = []
+                seen = set()
+                for img in images:
+                    iid = img.get('ImageId')
+                    if not iid or iid in seen:
+                        continue
+                    seen.add(iid)
+                    min_root_gb = None
+                    for bdm in img.get('BlockDeviceMappings', []) or []:
+                        if bdm.get('DeviceName'):
+                            # VolumeSize represents the snapshot size and default root volume size (minimum)
+                            min_root_gb = bdm['Ebs'].get('VolumeSize')
+                            break
+                    out.append({
+                        'distribution': distro,
+                        'ami_id': iid,
+                        'description': img.get('Description', ''),
+                        'mininimum_storage_size': min_root_gb,
+                    })
+                return out
+
+            # Fetch per distro once
+            fetched = {d: fetch_for_distro(d) for d in ordered_distros}
+
+            # First pass: take up to quota from each distro
+            result: list[dict] = []
+            idx = {d: 0 for d in ordered_distros}
+            for d in ordered_distros:
+                taken = 0
+                while taken < quota and idx[d] < len(fetched[d]) and len(result) < max_total:
+                    result.append(fetched[d][idx[d]])
+                    idx[d] += 1
+                    taken += 1
+
+            # Second pass: fill remaining slots from any distro
+            while len(result) < max_total:
+                progressed = False
+                for d in ordered_distros:
+                    if idx[d] < len(fetched[d]) and len(result) < max_total:
+                        result.append(fetched[d][idx[d]])
+                        idx[d] += 1
+                        progressed = True
+                if not progressed:
+                    break
+
+            logger.info(f"Returning {len(result)} AMIs for region {region_name}")
+            return {
+                'region': region_name,
+                'total': len(result),
+                'amis': result
+            }
+
+        except ClientError as e:
+            error_msg = str(e)
+            logger.error(f"Error fetching AMIs: {error_msg}")
+            return {"error": error_msg}
+        except Exception as e:
+            logger.error(f"Unexpected error fetching AMIs: {e}")
+            return {"error": str(e)}
 
     @mcp.tool()
     async def create_ec2_instance(
@@ -106,17 +174,30 @@ def register_tools(mcp):
         '''
         logger.info(f"Creating EC2 instance: MinCount={MinCount}, MaxCount={MaxCount}, InstanceType={InstanceType}, ImageId={ImageId}, StorageSize={StorageSize}, VolumeType={VolumeType}, region={region_name}")
         try:
-            # Create boto3 resource with provided credentials or fall back to environment/default
             if aws_access_key_id and aws_secret_access_key:
                 ec2 = boto3.resource(
-                    'ec2', 
+                    'ec2',
                     region_name=region_name,
                     aws_access_key_id=aws_access_key_id,
                     aws_secret_access_key=aws_secret_access_key
                 )
             else:
                 ec2 = boto3.resource('ec2', region_name=region_name)
-                
+
+            # Get minimum required root volume size from the AMI
+            try:
+                image = ec2.Image(ImageId)
+                min_root_size = 8  # Default minimum
+                for bdm in image.block_device_mappings or []:
+                    if bdm.get('DeviceName') == '/dev/sda1' and 'Ebs' in bdm:
+                        min_root_size = bdm['Ebs'].get('VolumeSize', min_root_size)
+                        break
+                if StorageSize < min_root_size:
+                    logger.warning(f"Requested StorageSize {StorageSize}GB is less than AMI minimum {min_root_size}GB. Adjusting to minimum.")
+                    StorageSize = min_root_size
+            except Exception as e:
+                logger.warning(f"Could not determine AMI minimum root volume size: {e}. Proceeding with requested StorageSize {StorageSize}GB.")
+
             instances = ec2.create_instances(
                 ImageId=ImageId,
                 MinCount=MinCount,
