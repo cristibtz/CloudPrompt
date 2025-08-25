@@ -1,11 +1,15 @@
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import { useState } from "react"
 import { Header } from "@/components/header"
 import { PromptInput } from "@/components/prompt-form"
 import { ResultsCanvas } from "@/components/results-canvas"
 import { api } from "@/services/api"
 import { toast } from "sonner"
+import { KeycloakProvider } from "./auth/KeycloakProvider"
+import LoginPage from "./components/LoginPage"
+import ProtectedRoute from "./components/ProtectedRoute"
 
-function App() {
+function MainApp() {
   const [results, setResults] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
@@ -80,6 +84,26 @@ function App() {
         </div>
       </main>
     </div>
+  )
+}
+
+function App() {
+  return (
+    <KeycloakProvider>
+      <Router>
+        <Routes>
+          <Route path="/login" element={<LoginPage />} />
+          <Route 
+            path="/" 
+            element={
+              <ProtectedRoute>
+                <MainApp />
+              </ProtectedRoute>
+            } 
+          />
+        </Routes>
+      </Router>
+    </KeycloakProvider>
   )
 }
 
