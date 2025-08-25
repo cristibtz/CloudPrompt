@@ -5,9 +5,11 @@ import {
   NavigationMenuList,
 } from "@/components/ui/navigation-menu"
 import { useState } from "react"
+import { useKeycloak } from "../auth/KeycloakContext"
 
 export function Header() {
     const [isMenuOpen, setIsMenuOpen] = useState(false)
+    const { authenticated, logout, keycloak } = useKeycloak()
 
     return (
         <header className="bg-[#0B1C37] text-white p-4 w-full border-b border-[#B0BEC5]/20">
@@ -49,8 +51,19 @@ export function Header() {
                 </NavigationMenu>
 
                 <div className="flex justify-end items-center space-x-4">
-
-                    {/* Add your future buttons here */}
+                    {authenticated && (
+                        <>
+                            <span className="text-sm text-gray-300">
+                                Welcome, {keycloak?.tokenParsed?.preferred_username || 'User'}
+                            </span>
+                            <button
+                                onClick={logout}
+                                className="bg-red-600 hover:bg-red-700 px-4 py-2 rounded-md text-white text-sm font-medium transition-colors duration-300"
+                            >
+                                Logout
+                            </button>
+                        </>
+                    )}
                 </div>
             </div>
 
@@ -100,7 +113,14 @@ export function Header() {
                         >
                             User Profile
                         </a>
-                        {/* Space for future mobile buttons */}
+                        {authenticated && (
+                            <button
+                                onClick={logout}
+                                className="block w-full text-left px-4 py-3 bg-red-600 rounded-md hover:bg-red-700 transition-colors duration-300 text-white text-lg font-semibold"
+                            >
+                                Logout
+                            </button>
+                        )}
                     </div>
                 )}
             </div>

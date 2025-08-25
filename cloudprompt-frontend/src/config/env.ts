@@ -1,10 +1,16 @@
-// Environment configuration with validation
+// Environment configuration and validation
+
 interface Config {
   apiBaseUrl: string
   apiTimeout: number
   appName: string
   appVersion: string
   debugMode: boolean
+  keycloak: {
+    url: string
+    realm: string
+    clientId: string
+  }
 }
 
 // Validate required environment variables
@@ -14,6 +20,11 @@ function validateEnv(): Config {
   const appName = import.meta.env.VITE_APP_NAME
   const appVersion = import.meta.env.VITE_APP_VERSION
   const debugMode = import.meta.env.VITE_DEBUG_MODE === 'true'
+  
+  // Keycloak configuration
+  const keycloakUrl = import.meta.env.VITE_KEYCLOAK_URL
+  const keycloakRealm = import.meta.env.VITE_KEYCLOAK_REALM
+  const keycloakClientId = import.meta.env.VITE_KEYCLOAK_CLIENT_ID
 
   if (!apiBaseUrl) {
     throw new Error('VITE_API_BASE_URL is required in environment variables')
@@ -23,8 +34,13 @@ function validateEnv(): Config {
     apiBaseUrl,
     apiTimeout: apiTimeout ? parseInt(apiTimeout, 10) : 30000,
     appName: appName || 'CloudPrompt',
-    appVersion: appVersion || '0.0.1',
+    appVersion: appVersion || '0.0.2',
     debugMode,
+    keycloak: {
+      url: keycloakUrl || 'http://192.168.100.11:8080',
+      realm: keycloakRealm || 'cloudprompt',
+      clientId: keycloakClientId || 'cloudprompt-client',
+    },
   }
 }
 
@@ -37,5 +53,6 @@ if (config.debugMode) {
     apiTimeout: config.apiTimeout,
     appName: config.appName,
     appVersion: config.appVersion,
+    keycloak: config.keycloak,
   })
 }
