@@ -65,7 +65,6 @@ VITE_APP_VERSION=0.0.1
     pip install -r requirements.txt # Or 'pip install -e .'
     ```
 3. Set up the `.env` file with your credentials and configurations as shown above.
-
 4. Start MCP server:
     ```bash
     python mcp_server/mcp_server.py
