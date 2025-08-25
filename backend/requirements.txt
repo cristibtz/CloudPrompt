@@ -1,7 +1,10 @@
-fastapi[standard]==0.116.1
+fastapi[standard]
 sqlalchemy==2.0.41
-uvicorn[standard]==0.35.0
+uvicorn[standard]
 psycopg2==2.9.10
 alembic==1.16.4
 psycopg2-binary==2.9.10
 python-dotenv==1.1.0
+python-keycloak
+PyJWT[crypto]
+typing
