@@ -13,8 +13,19 @@ const apiClient = axios.create({
 // Simple API functions
 export const api = {
   // Execute command - send prompt and provider and get result
-  executeCommand: async (prompt: string, provider: string) => {
-    const response = await apiClient.post('/execute', { prompt, provider })
+  executeCommand: async (prompt: string, provider: string, token?: string) => {
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    }
+    
+    // Add Authorization header if token is provided
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`
+    }
+    
+    const response = await apiClient.post('/execute', { prompt, provider }, {
+      headers
+    })
     return response.data.response
   }
 }
