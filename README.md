@@ -31,11 +31,6 @@ OPENAI_API_KEY=
 #Logfire token
 LOGFIRE_TOKEN=
 
-#LangSmith OpenTelemetry variables
-LANGSMITH_TRACING="true"
-LANGSMITH_ENDPOINT="https://api.smith.langchain.com"
-LANGSMITH_API_KEY=""
-LANGSMITH_PROJECT=""
 ```
 ## Setup .env file in backend directory
 ```.env
