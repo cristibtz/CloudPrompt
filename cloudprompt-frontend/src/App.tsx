@@ -6,6 +6,7 @@ import { ResultsCanvas } from "@/components/results-canvas"
 import { api } from "@/services/api"
 import { toast } from "sonner"
 import { KeycloakProvider } from "./auth/KeycloakProvider"
+import { useKeycloak } from './auth/KeycloakContext'
 import LoginPage from "./components/LoginPage"
 import ProtectedRoute from "./components/ProtectedRoute"
 
@@ -13,6 +14,9 @@ function MainApp() {
   const [results, setResults] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
+  
+  // Get token from Keycloak context
+  const { token } = useKeycloak()
 
   const handlePromptSubmit = async (prompt: string, provider: string) => {
     setIsLoading(true)
@@ -22,7 +26,7 @@ function MainApp() {
     try {
       console.log('Submitting prompt:', prompt, 'Provider:', provider)
 
-      const response = await api.executeCommand(prompt, provider)
+      const response = await api.executeCommand(prompt, provider, token)
 
       // Handle plain text responses
       if (response.is_plain_text && response.response?.message) {
