@@ -49,7 +49,11 @@ docker run -d --name cloudprompt-db -e POSTGRES_USER="cloudprompt" -e POSTGRES_P
 ```.env
 VITE_API_BASE_URL=
 VITE_APP_NAME=CloudPrompt
-VITE_APP_VERSION=0.0.1
+VITE_APP_VERSION=0.0.2
+
+VITE_KEYCLOAK_URL=http://192.168.100.11:8080
+VITE_KEYCLOAK_REALM=cloudprompt
+VITE_KEYCLOAK_CLIENT_ID=cloudprompt-client
 ```
 
 ## Development Setup
