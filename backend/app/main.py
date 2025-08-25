@@ -1,8 +1,9 @@
 import asyncio
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from app.api.v1 import execute  # Import your router modules
 import json, ast
+from app.auth import auth
 
 app = FastAPI()
 
@@ -24,10 +25,10 @@ app.add_middleware(
 # app.include_router(prompts.router, prefix="/api/v1", tags=["prompts"])
 app.include_router(execute.router, prefix="/api/v1", tags=["execute"])
 
-@app.get("/")
+@app.get("/", dependencies=[Depends(auth.valid_access_token)])
 async def root():
     try:
-        return {"response": "CloudPrompt API", "version": "0.0.1"}
+        return {"response": "CloudPrompt API", "version": "0.0.2"}
     except Exception as e:
         return {"response": f"Internal Server Error: {str(e)}"}
 

@@ -1,4 +1,5 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
+from app.auth import auth
 from cloudprompt.agent.router_agent import execute_provider
 from pydantic import BaseModel
 from typing import Optional, Dict, Any
@@ -11,7 +12,7 @@ class Request(BaseModel):
     provider: str
     credentials: Optional[Dict[str, Any]] = None
 
-@router.post("/execute")
+@router.post("/execute", dependencies=[Depends(auth.valid_access_token)])
 async def execute(request: Request):
     
     providers = ["aws", "azure", "gcp", "proxmox"]
