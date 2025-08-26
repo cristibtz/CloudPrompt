@@ -21,6 +21,7 @@ if config.config_file_name is not None:
 from app.models.base import Base
 from app.models import user  # Import user model so it registers with Base
 from app.models import prompts  # Import prompts model so it registers with Base
+from app.models import credentials  # Import credentials model so it registers with Base
 target_metadata = Base.metadata
 
 # other values from the config, defined by the needs of env.py,

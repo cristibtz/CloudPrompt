@@ -1,9 +1,14 @@
 #!/usr/bin/env python3
+"""
+Seed script to populate the database with dummy data.
+Run this script to add 5 users, 5 prompts, and 5 credentials to the database.
+"""
 
 import sys
 import os
+import base64
+import json
 from datetime import datetime, timedelta
-import random
 
 # Add the backend directory to Python path
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
@@ -11,148 +16,209 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 from app.database.db import SessionLocal
 from app.models.user import User
 from app.models.prompts import Prompt
+from app.models.credentials import Credential
 
-def create_dummy_data():
-    """Create dummy users and prompts for testing."""
+def create_dummy_credentials_data():
+    """Create base64 encoded JSON credentials for AWS and Proxmox"""
+    
+    # AWS credentials structure
+    aws_creds = {
+        "access_key_id": "AKIA123456789EXAMPLE",
+        "secret_access_key": "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
+    }
+    
+    # Proxmox credentials structure
+    proxmox_creds = {
+        "host": "proxmox.example.com",
+        "username": "root@pam",
+        "password": "proxmox_password_123",
+    }
+    
+    # Encode to base64
+    aws_encoded = base64.b64encode(json.dumps(aws_creds).encode()).decode()
+    proxmox_encoded = base64.b64encode(json.dumps(proxmox_creds).encode()).decode()
+    
+    return aws_encoded, proxmox_encoded
+
+def seed_database():
+    """Seed the database with dummy data"""
     
     db = SessionLocal()
     
     try:
-        print("Creating dummy data...")
-        
-        # Create dummy users
-        users_data = [
-            {"username": "john_doe", "email": "john@example.com", "credits": 100},
-            {"username": "jane_smith", "email": "jane@example.com", "credits": 250},
-            {"username": "admin_user", "email": "admin@cloudprompt.com", "credits": 500},
-            {"username": "developer", "email": "dev@example.com", "credits": 150},
-            {"username": "tester", "email": "test@example.com", "credits": 75},
-        ]
-        
-        users = []
-        for user_data in users_data:
-            user = User(**user_data)
-            db.add(user)
-            users.append(user)
-        
+        # Clear existing data (optional - remove if you want to keep existing data)
+        print("Clearing existing data...")
+        db.query(Credential).delete()
+        db.query(Prompt).delete()
+        db.query(User).delete()
         db.commit()
-        print(f"✅ Created {len(users)} users")
         
-        # Refresh users to get their IDs
-        for user in users:
-            db.refresh(user)
+        print("Creating dummy users...")
         
-        # Create dummy prompts with various providers
-        prompt_examples = [
-            {
-                "prompt": "List all EC2 instances in us-east-1",
-                "response": '{"instances": [{"id": "i-1234567890abcdef0", "type": "t3.micro", "state": "running"}]}',
-                "provider": "aws"
-            },
-            {
-                "prompt": "Create a new S3 bucket called my-test-bucket",
-                "response": '{"bucket": "my-test-bucket", "status": "created", "region": "us-east-1"}',
-                "provider": "aws"
-            },
-            {
-                "prompt": "Show me all VMs in my Proxmox cluster",
-                "response": "I can assist with AWS-related queries, but I'm unable to interact with Proxmox nodes directly. Please configure your Proxmox credentials.",
-                "provider": "proxmox"
-            },
-            {
-                "prompt": "List all resource groups in Azure",
-                "response": '{"resource_groups": [{"name": "production-rg", "location": "East US"}, {"name": "development-rg", "location": "West US"}]}',
-                "provider": "azure"
-            },
-            {
-                "prompt": "Create a new VM with 2 CPUs and 4GB RAM",
-                "response": '{"vm_id": "vm-456", "status": "creating", "specs": {"cpu": 2, "memory": "4GB"}}',
-                "provider": "gcp"
-            },
-            {
-                "prompt": "Stop all running instances",
-                "response": '{"stopped_instances": ["i-1234567890abcdef0", "i-0987654321fedcba0"], "count": 2}',
-                "provider": "aws"
-            },
-            {
-                "prompt": "Get billing information for this month",
-                "response": '{"current_month_cost": "$45.67", "projected_month_cost": "$52.30", "top_services": ["EC2", "S3", "RDS"]}',
-                "provider": "aws"
-            },
-            {
-                "prompt": "Create a load balancer for my web application",
-                "response": '{"load_balancer": {"name": "web-app-lb", "dns": "web-app-lb-123456789.us-east-1.elb.amazonaws.com", "status": "provisioning"}}',
-                "provider": "aws"
-            },
-            {
-                "prompt": "List all storage accounts in Azure",
-                "response": '{"storage_accounts": [{"name": "prodstg001", "type": "Standard_LRS"}, {"name": "devstg001", "type": "Standard_GRS"}]}',
-                "provider": "azure"
-            },
-            {
-                "prompt": "Show me my GCP project quotas",
-                "response": '{"quotas": {"compute_instances": {"used": 5, "limit": 24}, "persistent_disks": {"used": "2TB", "limit": "10TB"}}}',
-                "provider": "gcp"
-            },
-            {
-                "prompt": "Start my development environment",
-                "response": "Unable to connect to Proxmox API. Please check your network connectivity and credentials.",
-                "provider": "proxmox"
-            },
-            {
-                "prompt": "Create a new RDS MySQL instance",
-                "response": '{"db_instance": {"identifier": "myapp-db", "engine": "mysql", "status": "creating", "endpoint": "pending"}}',
-                "provider": "aws"
-            }
-        ]
-        
-        prompts = []
-        for i, prompt_data in enumerate(prompt_examples):
-            # Assign prompts to random users
-            user = random.choice(users)
-            
-            # Create prompts with different timestamps (last 30 days)
-            created_at = datetime.utcnow() - timedelta(days=random.randint(0, 30), 
-                                                     hours=random.randint(0, 23), 
-                                                     minutes=random.randint(0, 59))
-            
-            prompt = Prompt(
-                user_id=user.id,
-                prompt=prompt_data["prompt"],
-                response=prompt_data["response"],
-                provider=prompt_data["provider"],
-                created_at=created_at
+        # Create 5 users
+        users = [
+            User(
+                keycloak_id="user-001-keycloak-id",
+                username="alice_smith",
+                email="alice@example.com",
+                credits=100
+            ),
+            User(
+                keycloak_id="user-002-keycloak-id",
+                username="bob_jones",
+                email="bob@example.com",
+                credits=150
+            ),
+            User(
+                keycloak_id="user-003-keycloak-id",
+                username="charlie_brown",
+                email="charlie@example.com",
+                credits=75
+            ),
+            User(
+                keycloak_id="user-004-keycloak-id",
+                username="diana_wilson",
+                email="diana@example.com",
+                credits=200
+            ),
+            User(
+                keycloak_id="user-005-keycloak-id",
+                username="eve_garcia",
+                email="eve@example.com",
+                credits=125
             )
-            db.add(prompt)
-            prompts.append(prompt)
+        ]
         
+        # Add users to database
+        for user in users:
+            db.add(user)
         db.commit()
-        print(f"✅ Created {len(prompts)} prompts")
         
-        # Print summary
-        print("\n📊 Database Summary:")
-        print(f"   Users: {len(users)}")
-        print(f"   Prompts: {len(prompts)}")
-        print(f"   Providers used: {len(set(p['provider'] for p in prompt_examples))}")
-        
-        print("\n👤 Created Users:")
+        # Refresh to get IDs
         for user in users:
             db.refresh(user)
-            print(f"   • {user.username} ({user.email}) - {user.credits} credits - {len(user.prompts)} prompts")
         
-        print("\n🔥 Recent Prompts:")
-        recent_prompts = sorted(prompts, key=lambda p: p.created_at, reverse=True)[:5]
-        for prompt in recent_prompts:
-            print(f"   • [{prompt.provider}] {prompt.prompt[:50]}...")
+        print(f"Created {len(users)} users")
         
-        print("\n✅ Dummy data created successfully!")
+        print("Creating dummy prompts...")
+        
+        # Create 5 prompts
+        prompts = [
+            Prompt(
+                user_id=users[0].id,
+                prompt="Create an EC2 instance with Ubuntu 22.04",
+                response="EC2 instance i-1234567890abcdef0 created successfully",
+                provider="aws",
+                created_at=datetime.utcnow() - timedelta(days=5)
+            ),
+            Prompt(
+                user_id=users[1].id,
+                prompt="List all virtual machines in Proxmox",
+                response="Found 3 VMs: vm-101, vm-102, vm-103",
+                provider="proxmox",
+                created_at=datetime.utcnow() - timedelta(days=4)
+            ),
+            Prompt(
+                user_id=users[2].id,
+                prompt="Create S3 bucket for backup storage",
+                response="S3 bucket 'backup-storage-2024' created successfully",
+                provider="aws",
+                created_at=datetime.utcnow() - timedelta(days=3)
+            ),
+            Prompt(
+                user_id=users[3].id,
+                prompt="Start virtual machine vm-101",
+                response="Virtual machine vm-101 started successfully",
+                provider="proxmox",
+                created_at=datetime.utcnow() - timedelta(days=2)
+            ),
+            Prompt(
+                user_id=users[4].id,
+                prompt="Check AWS account billing",
+                response="Current month charges: $45.67",
+                provider="aws",
+                created_at=datetime.utcnow() - timedelta(days=1)
+            )
+        ]
+        
+        # Add prompts to database
+        for prompt in prompts:
+            db.add(prompt)
+        db.commit()
+        
+        print(f"Created {len(prompts)} prompts")
+        
+        print("Creating dummy credentials...")
+        
+        # Get encoded credentials
+        aws_encoded, proxmox_encoded = create_dummy_credentials_data()
+        
+        # Create 5 credentials (mix of AWS and Proxmox)
+        credentials = [
+            Credential(
+                user_id=users[0].id,
+                provider="aws",
+                data=aws_encoded,
+                created_at=datetime.utcnow() - timedelta(days=10)
+            ),
+            Credential(
+                user_id=users[1].id,
+                provider="proxmox",
+                data=proxmox_encoded,
+                created_at=datetime.utcnow() - timedelta(days=9)
+            ),
+            Credential(
+                user_id=users[2].id,
+                provider="aws",
+                data=aws_encoded,
+                created_at=datetime.utcnow() - timedelta(days=8)
+            ),
+            Credential(
+                user_id=users[3].id,
+                provider="proxmox",
+                data=proxmox_encoded,
+                created_at=datetime.utcnow() - timedelta(days=7)
+            ),
+            Credential(
+                user_id=users[4].id,
+                provider="aws",
+                data=aws_encoded,
+                created_at=datetime.utcnow() - timedelta(days=6)
+            )
+        ]
+        
+        # Add credentials to database
+        for credential in credentials:
+            db.add(credential)
+        db.commit()
+        
+        print(f"Created {len(credentials)} credentials")
+        
+        # Show sample decoded credentials for verification
+        print("\nSample credential data (decoded):")
+        print("AWS credentials:")
+        print(json.dumps(json.loads(base64.b64decode(aws_encoded).decode()), indent=2))
+        print("\nProxmox credentials:")
+        print(json.dumps(json.loads(base64.b64decode(proxmox_encoded).decode()), indent=2))
+        
+        print("\n" + "="*50)
+        print("DATABASE SEEDING COMPLETED SUCCESSFULLY!")
+        print("="*50)
+        print(f"✓ Users: {len(users)}")
+        print(f"✓ Prompts: {len(prompts)}")
+        print(f"✓ Credentials: {len(credentials)}")
+        print("\nCredentials structure:")
+        print("- AWS: access_key_id, secret_access_key")
+        print("- Proxmox: host, username, password")
+        print("\nAll credential data is base64 encoded JSON.")
         
     except Exception as e:
-        print(f"❌ Error creating dummy data: {e}")
+        print(f"Error seeding database: {e}")
         db.rollback()
         raise
     finally:
         db.close()
 
 if __name__ == "__main__":
-    create_dummy_data()
+    print("Starting database seeding...")
+    seed_database()
