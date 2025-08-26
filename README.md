@@ -40,11 +40,6 @@ DB_HOST=
 DB_NAME=cloudprompt
 ```
 
-## Start database
-```bash
-docker run -d --name cloudprompt-db -e POSTGRES_USER="cloudprompt" -e POSTGRES_PASSWORD="cloudprompt" -e POSTGRES_DB="cloudprompt" -p 5432:5432 postgres:latest
-```
-
 ## Setup .env file in frontend directory
 ```.env
 VITE_API_BASE_URL=
@@ -76,8 +71,6 @@ VITE_KEYCLOAK_CLIENT_ID=cloudprompt-client
 5. Start backend API:
     ```bash
     pip install -r requirements.txt
-    alembic revision --autogenerate -m "initial_migration"
-    alembic upgrade head
     uvicorn app.main:app --reload --host 0.0.0.0 --port 8888
     ```
 6. Start frontend:
