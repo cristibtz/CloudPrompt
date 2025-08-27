@@ -4,7 +4,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Loader2, Plus, Key } from 'lucide-react'
 import { api } from '@/services/api'
 import { useKeycloak } from '@/auth/KeycloakContext'
-import { ResultsCanvas } from './results-canvas'
 
 interface CredentialData {
   [key: string]: string
