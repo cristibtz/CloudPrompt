@@ -2,7 +2,7 @@ import asyncio
 from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from app.api.v1 import execute
-from app.api.v1 import users
+from app.api.v1 import users, credentials
 import json, ast
 from app.auth import auth
 
@@ -23,6 +23,7 @@ app.add_middleware(
 )
 
 app.include_router(users.router, prefix="/api/v1/users", tags=["users"])
+app.include_router(credentials.router, prefix="/api/v1/credentials", tags=["credentials"])
 # app.include_router(prompts.router, prefix="/api/v1", tags=["prompts"])
 app.include_router(execute.router, prefix="/api/v1", tags=["execute"])
 
