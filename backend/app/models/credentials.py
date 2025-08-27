@@ -8,6 +8,7 @@ class Credential(Base):
     
     id = Column(Integer, primary_key=True, index=True, nullable=False)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    name = Column(String(100), nullable=False)
     provider = Column(String(50), nullable=False)
     data = Column(Text, nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow)
