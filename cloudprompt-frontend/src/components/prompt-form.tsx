@@ -1,15 +1,18 @@
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 
 import { Button } from "@/components/ui/button"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import {
   Form,
   FormControl,
   FormField,
   FormItem,
 } from "@/components/ui/form"
+import { api } from "@/services/api"
+import { useKeycloak } from "@/auth/KeycloakContext"
 
 const FormSchema = z.object({
   prompt: z.string().min(1, {
@@ -18,37 +21,81 @@ const FormSchema = z.object({
   provider: z.string().min(1, {
     message: "Provider must be selected",
   }),
+  credentials: z.string().min(1, {
+    message: "Credentials must be selected",
+  }),
 })
 
+interface Credential {
+  id: number
+  name: string
+  provider: string
+  data: Record<string, string>
+}
 
 interface PromptInputProps {
-  onSubmit: (prompt: string, provider: string) => Promise<void>
+  onSubmit: (prompt: string, provider: string, credentialsName: string) => Promise<void>
 }
 
 export function PromptInput({ onSubmit }: PromptInputProps) {
   const [isSubmitted, setIsSubmitted] = useState(false)
+  const [credentials, setCredentials] = useState<Credential[]>([])
+  const [filteredCredentials, setFilteredCredentials] = useState<Credential[]>([])
+  const [isLoadingCredentials, setIsLoadingCredentials] = useState(false)
+
+  const { token } = useKeycloak()
 
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
     defaultValues: {
       prompt: "",
       provider: "aws",
+      credentials: "",
     },
   })
 
+  const selectedProvider = form.watch("provider")
+
+  useEffect(() => {
+    const fetchCredentials = async () => {
+      if (!token) return
+      
+      setIsLoadingCredentials(true)
+      try {
+        const userCredentials = await api.getUserCredentials(token)
+        setCredentials(userCredentials || [])
+      } catch (error) {
+        console.error("Failed to fetch credentials:", error)
+        setCredentials([])
+      } finally {
+        setIsLoadingCredentials(false)
+      }
+    }
+
+    fetchCredentials()
+  }, [token])
+
+  useEffect(() => {
+    const filtered = credentials.filter(cred => cred.provider === selectedProvider)
+    setFilteredCredentials(filtered)
+    
+    if (filtered.length === 0) {
+      form.setValue("credentials", "")
+    } else if (!filtered.find(c => c.name === form.getValues("credentials"))) {
+      form.setValue("credentials", filtered[0]?.name || "")
+    }
+  }, [selectedProvider, credentials, form])
+
   async function handleSubmit(data: z.infer<typeof FormSchema>) {
-    console.log("Form submitted:", data) // Debug log
+    console.log("Form submitted:", data)
     setIsSubmitted(true)
 
     try {
-      await onSubmit(data.prompt, data.provider)
+      await onSubmit(data.prompt, data.provider, data.credentials)
     } catch (error) {
       console.error("Form submission error:", error)
     }
 
-    // Keep the form as it was submitted - don't reset
-
-    // Reset submitted state after 3 seconds
     setTimeout(() => setIsSubmitted(false), 3000)
   }
 
@@ -74,21 +121,65 @@ export function PromptInput({ onSubmit }: PromptInputProps) {
                 <FormControl>
                   <div className="mb-2">
                     <label htmlFor="provider" className="block text-sm font-medium text-[#0B1C37] mb-1">Cloud Provider</label>
-                    <select
-                      {...field}
-                      id="provider"
-                      className="w-full p-2 border-2 border-[#B0BEC5]/30 rounded-lg focus:border-[#2196F3] focus:outline-none focus:ring-2 focus:ring-[#2196F3]/20 transition-all duration-300"
-                    >
-                      <option value="aws">AWS</option>
-                      <option value="azure">Azure</option>
-                      <option value="gcp">GCP</option>
-                      <option value="proxmox">Proxmox</option>
-                    </select>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <SelectTrigger className="w-full p-2 border-2 border-[#B0BEC5]/30 rounded-lg focus:border-[#2196F3] focus:outline-none focus:ring-2 focus:ring-[#2196F3]/20 transition-all duration-300">
+                        <SelectValue placeholder="Select a provider" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-white border-2 border-[#B0BEC5]/30 shadow-lg">
+                        <SelectItem value="aws">AWS</SelectItem>
+                        <SelectItem value="azure">Azure</SelectItem>
+                        <SelectItem value="gcp">GCP</SelectItem>
+                        <SelectItem value="proxmox">Proxmox</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
                 </FormControl>
                 {form.formState.errors.provider && (
                   <p className="text-red-500 text-sm mt-2">
                     {form.formState.errors.provider.message}
+                  </p>
+                )}
+              </FormItem>
+            )}
+          />
+
+          {/* Credentials Dropdown */}
+          <FormField
+            control={form.control}
+            name="credentials"
+            render={({ field }) => (
+              <FormItem>
+                <FormControl>
+                  <div className="mb-2">
+                    <label htmlFor="credentials" className="block text-sm font-medium text-[#0B1C37] mb-1">
+                      Credentials <span className="text-red-500">*</span> {isLoadingCredentials && <span className="text-xs text-[#B0BEC5]">(Loading...)</span>}
+                    </label>
+                    <Select onValueChange={field.onChange} value={field.value} disabled={isLoadingCredentials || filteredCredentials.length === 0}>
+                      <SelectTrigger className="w-full p-2 border-2 border-[#B0BEC5]/30 rounded-lg focus:border-[#2196F3] focus:outline-none focus:ring-2 focus:ring-[#2196F3]/20 transition-all duration-300">
+                        <SelectValue placeholder={
+                          filteredCredentials.length === 0 
+                            ? `No ${selectedProvider.toUpperCase()} credentials found - Add credentials first` 
+                            : "Select credentials"
+                        } />
+                      </SelectTrigger>
+                      <SelectContent className="bg-white border-2 border-[#B0BEC5]/30 shadow-lg">
+                        {filteredCredentials.map((cred) => (
+                          <SelectItem key={cred.id} value={cred.name}>
+                            {cred.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    {filteredCredentials.length === 0 && (
+                      <p className="text-orange-600 text-xs mt-1">
+                        Please add {selectedProvider.toUpperCase()} credentials using the form on the right before executing commands.
+                      </p>
+                    )}
+                  </div>
+                </FormControl>
+                {form.formState.errors.credentials && (
+                  <p className="text-red-500 text-sm mt-2">
+                    {form.formState.errors.credentials.message}
                   </p>
                 )}
               </FormItem>
