@@ -1,14 +1,11 @@
 import logging
 import asyncio
 import httpx
-from dotenv import load_dotenv
 from fastmcp import FastMCP
 from tools.aws_tools import register_aws_tools
 from tools.azure_tools import register_azure_tools
 from tools.gcp_tools import register_gcp_tools
 from tools.proxmox_tools import register_proxmox_tools
-
-load_dotenv()
 
 logging.basicConfig(
     level=logging.INFO,
