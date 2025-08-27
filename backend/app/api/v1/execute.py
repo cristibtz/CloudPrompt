@@ -1,7 +1,6 @@
 from fastapi import APIRouter, HTTPException, Depends
 from app.auth import auth
 from cloudprompt.agent.router_agent import execute_provider
-from app.models.responses import ExecuteResponse, ErrorDetail
 from app.utils.get_id_by_kc_id import get_id_by_kc_id
 from app.database.db import get_db
 from app.models.credentials import Credential
@@ -12,46 +11,37 @@ import json, base64
 router = APIRouter()
 
 class ExecuteRequest(BaseModel):
-    """Request model for command execution."""
+    """Request model for prompt execution."""
     prompt: str = Field(..., 
-                       description="Natural language command to execute",
+                       description="Natural language prompt to execute",
                        example="List all EC2 instances in us-east-1",
                        min_length=1,
                        max_length=1000)
     provider: str = Field(..., 
-                         description="Cloud provider to execute the command on",
+                         description="Cloud provider to execute the prompt on",
                          example="aws")
     credentials: Optional[str] = Field(None,
                                      description="Name of the credential set to use for authentication",
                                      example="my-aws-credentials")
 
-    class Config:
-        schema_extra = {
-            "example": {
-                "prompt": "List all running EC2 instances",
-                "provider": "aws", 
-                "credentials": "my-aws-prod-creds"
-            }
-        }
-
 @router.post("/execute", 
              dependencies=[Depends(auth.valid_access_token)], 
-             response_model=ExecuteResponse,
-             summary="Execute cloud command",
-             description="Execute a natural language command on the specified cloud provider",
+             tags=["Prompt Execution"],
+             summary="Execute cloud prompt",
+             description="Execute a natural language prompt on the specified cloud provider",
              responses={
                  200: {
-                     "description": "Command executed successfully",
-                     "content": {
-                         "application/json": {
-                             "example": {
-                                 "success": True,
-                                 "data": {"instances": [{"id": "i-123", "state": "running"}]},
-                                 "provider": "aws",
-                                 "message": "Prompt executed successfully"
-                             }
-                         }
-                     }
+                    "description": "Prompt executed successfully",
+                    "content": {
+                        "application/json": {
+                            "example": {
+                                "success": True,
+                                "data": {"instances": [{"id": "i-123", "state": "running"}]},
+                                "provider": "aws",
+                                "message": "Prompt executed successfully"
+                            }
+                        }
+                    }
                  },
                  400: {
                      "description": "Bad request - validation error",
@@ -111,24 +101,7 @@ class ExecuteRequest(BaseModel):
                  }
              })
 async def execute(request: ExecuteRequest, token_data: Dict = Depends(auth.valid_access_token)):
-    """
-    Execute a natural language command on a cloud provider.
-    
-    This endpoint processes natural language prompts and executes them on the specified
-    cloud provider using the provided credentials. The system supports multiple cloud
-    providers including AWS, Azure, GCP, and Proxmox.
-    
-    Args:
-        request: ExecuteRequest containing the prompt, provider, and credentials
-        token_data: Authentication token data (automatically injected)
-    
-    Returns:
-        ExecuteResponse: Result of the command execution including data and status
-        
-    Raises:
-        HTTPException: For validation errors, missing credentials, or execution failures
-    """
-    
+
     providers = ["aws", "azure", "gcp", "proxmox"]
 
     user_input = request.prompt.strip() if request.prompt else ""
