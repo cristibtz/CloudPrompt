@@ -1,5 +1,5 @@
 import os, time
-from pydantic_ai import Agent
+from pydantic_ai import Agent, WebSearchTool
 from pydantic_ai.mcp import MCPServerSSE
 from pydantic_ai.tools import ToolDefinition
 from pydantic_ai.result import RunContext
@@ -7,6 +7,8 @@ from dotenv import load_dotenv
 from typing import Union, Callable
 import logfire
 from rich.console import Console
+from pydantic_ai.common_tools.duckduckgo import duckduckgo_search_tool
+
 
 console = Console()
 
@@ -39,6 +41,7 @@ class CloudAgentBase:
             f"{user_input}\n"
             "Always try to return a valid JSON format response without using '''json '''.\n"
             "Always return the result exactly the same from the MCP server, don't modify it unless explicitly asked.\n"
+            "If you need to figure out some information, use the builtin web search tool to find the information.\n"
         )
 
         # Add credentials instruction if provided
@@ -74,6 +77,7 @@ class CloudAgentBase:
             system_prompt=self.SYSTEM_PROMPT,
             model=self.model,
             toolsets=[self.server],
+            tools=[duckduckgo_search_tool()],
             prepare_tools=self.TOOL_FILTER
         )
 
