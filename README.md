@@ -38,6 +38,13 @@ DB_USERNAME=cloudprompt
 DB_PASSWORD=cloudprompt
 DB_HOST=
 DB_NAME=cloudprompt
+
+KEYCLOAK_SERVER_URL=
+KEYCLOAK_REALM=cloudprompt
+KEYCLOAK_CLIENT_ID=cloudprompt-client
+WEBHOOK_SECRET=cloudprompt-secret
+KEYCLOAK_ADMIN_USERNAME=cloudprompt-admin
+KEYCLOAK_ADMIN_PASSWORD=cloudprompt
 ```
 
 ## Setup .env file in frontend directory

@@ -33,6 +33,8 @@ docker run -d --name keycloak-cloudprompt -p 8080:8080 -e KC_BOOTSTRAP_ADMIN_USE
 # Assign client scope to client
 ![assign-client-scope](images/assign-client-scope.png)
 
+# Configure roles
+![roles](images/roles.png)
 ---
 
 # Install custom Keycloak
