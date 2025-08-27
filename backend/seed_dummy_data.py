@@ -157,30 +157,35 @@ def seed_database():
         credentials = [
             Credential(
                 user_id=users[0].id,
+                name="AWS creds",
                 provider="aws",
                 data=aws_encoded,
                 created_at=datetime.utcnow() - timedelta(days=10)
             ),
             Credential(
                 user_id=users[1].id,
+                name="Proxmox creds",
                 provider="proxmox",
                 data=proxmox_encoded,
                 created_at=datetime.utcnow() - timedelta(days=9)
             ),
             Credential(
                 user_id=users[2].id,
+                name="AWS creds 2",
                 provider="aws",
                 data=aws_encoded,
                 created_at=datetime.utcnow() - timedelta(days=8)
             ),
             Credential(
                 user_id=users[3].id,
+                name="Proxmox creds 2",
                 provider="proxmox",
                 data=proxmox_encoded,
                 created_at=datetime.utcnow() - timedelta(days=7)
             ),
             Credential(
                 user_id=users[4].id,
+                name="AWS creds 3",
                 provider="aws",
                 data=aws_encoded,
                 created_at=datetime.utcnow() - timedelta(days=6)
