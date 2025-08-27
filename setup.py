@@ -9,14 +9,15 @@ try:
         requirements = [line.strip() for line in fh if line.strip() and not line.startswith("#")]
 except FileNotFoundError:
     requirements = [
-        "dotenv==0.9.9",
-        "logfire==4.0.0",
-        "logfire[langchain]==4.0.0",
-        "pydantic_ai==0.4.5",
-        "rich==14.1.0",
-        "langchain==0.3.27",
-        "langchain_community==0.3.27",
-        "langchain_openai==0.3.28",
+        "dotenv",
+        "logfire",
+        "logfire[langchain]",
+        "pydantic_ai",
+        "rich",
+        "langchain",
+        "langchain_community",
+        "langchain_openai"
+        "pydantic-ai-slim[duckduckgo]",
     ]
 
 setup(
