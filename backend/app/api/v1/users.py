@@ -7,7 +7,6 @@ from typing import Dict
 
 from app.utils.get_email_by_id import get_email_by_id
 from app.utils.check_admin_role import check_admin_role
-from app.models.responses import StandardResponse, ErrorDetail
 from app.auth import auth
 
 from app.database.db import get_db
@@ -21,7 +20,6 @@ router = APIRouter()
 
 @router.post("/keycloak-webhook", 
              tags=["User Management"], 
-             response_model=Dict,
              summary="Keycloak webhook handler",
              description="Handle user creation/update events from Keycloak authentication service",
              responses={
@@ -69,22 +67,6 @@ async def webhook_handler(
     request: Request,
     x_keycloak_signature: str = Header(None, alias="X-Keycloak-Signature")
 ):
-    """
-    Handle Keycloak webhook events.
-    
-    Processes user creation and update events from the Keycloak authentication service.
-    Validates webhook signature for security and creates/updates local user records.
-    
-    Args:
-        request: HTTP request containing webhook payload
-        x_keycloak_signature: Webhook signature for validation
-    
-    Returns:
-        Dict: Success or error response
-        
-    Raises:
-        HTTPException: For invalid signatures or processing errors
-    """
     try:
         body = await request.body()
 
@@ -193,7 +175,6 @@ async def webhook_handler(
 
 @router.get("/", 
             dependencies=[Depends(check_admin_role)], 
-            response_model=Dict, 
             tags=["User Management"],
             summary="Get all users (Admin only)",
             description="Retrieve all registered users in the system. Requires admin privileges.",
@@ -237,15 +218,7 @@ async def webhook_handler(
                 }
             })
 async def get_users():
-    """
-    Get all users (Admin only).
-    
-    Retrieves all registered users in the system with their basic information.
-    This endpoint is restricted to users with admin privileges.
-    
-    Returns:
-        Dict: List of all users with their details
-    """
+
     try:
         db = next(get_db())
         try:
@@ -270,7 +243,6 @@ async def get_users():
 
 @router.get("/{user_id}", 
             dependencies=[Depends(check_admin_role)], 
-            response_model=Dict, 
             tags=["User Management"],
             summary="Get specific user (Admin only)",
             description="Retrieve details for a specific user by ID. Requires admin privileges.",
@@ -326,21 +298,7 @@ async def get_users():
                 }
             })
 async def get_user(user_id: int):
-    """
-    Get specific user (Admin only).
-    
-    Retrieves detailed information for a specific user by their ID.
-    This endpoint is restricted to users with admin privileges.
-    
-    Args:
-        user_id: The ID of the user to retrieve
-    
-    Returns:
-        Dict: User details including username, email, and credits
-        
-    Raises:
-        HTTPException: If user not found or access denied
-    """
+
     try:
         db = next(get_db())
         try:
