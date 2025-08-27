@@ -31,7 +31,9 @@ async def valid_access_token(
             audience="cloudprompt-client",
             options={"verify_exp": True},
         )
-        print("Token is valid. Claims:", data)
+        # Debug
+        # print("Token is valid. Claims:", data)
+        print("Token:", access_token)
         return data
     except jwt.exceptions.InvalidTokenError:
         raise HTTPException(status_code=401, detail="Not authenticated")
