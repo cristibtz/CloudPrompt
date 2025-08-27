@@ -47,10 +47,10 @@ class CloudAgentBase:
         # Add credentials instruction if provided
         if credentials and self.CLOUD_TYPE == "AWS":
             cred_instruction = "\nIMPORTANT: When calling AWS tools, use these credentials:\n"
-            if "access_key" in credentials:
-                cred_instruction += f"- aws_access_key_id: {credentials['access_key']}\n"
-            if "secret_key" in credentials:
-                cred_instruction += f"- aws_secret_access_key: {credentials['secret_key']}\n"
+            if "AWS_ACCESS_KEY" in credentials:
+                cred_instruction += f"- aws_access_key_id: {credentials['AWS_ACCESS_KEY']}\n"
+            if "AWS_SECRET_ACCESS_KEY" in credentials:
+                cred_instruction += f"- aws_secret_access_key: {credentials['AWS_SECRET_ACCESS_KEY']}\n"
             cred_instruction += "Pass these as parameters to all tool function calls.\n"
             user_prompt = cred_instruction + user_prompt
         
