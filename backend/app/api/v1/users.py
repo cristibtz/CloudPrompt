@@ -14,6 +14,8 @@ from app.models.user import User
 from app.models.prompts import Prompt
 from app.models.credentials import Credential
 
+from app.utils.keycloak_admin import init_keycloak_admin
+
 load_dotenv(os.path.join(os.path.dirname(__file__), '../../../','.env'))
 
 router = APIRouter()
@@ -194,4 +196,74 @@ async def get_user(user_id: int):
                tags=["User Management"],
                summary="Delete specific user (Admin only)")
 async def delete_user(user_id: int):
-    pass
+    try:
+        db = next(get_db())
+        try:
+            user = db.query(User).filter(User.id == user_id).first()
+            if not user:
+                raise HTTPException(status_code=404, detail={
+                    "success": False,
+                    "error": {
+                        "code": "USER_NOT_FOUND",
+                        "message": "User not found"
+                    }
+                })
+            
+            keycloak_id = user.keycloak_id
+            
+            # First, delete from Keycloak
+            keycloak_admin = init_keycloak_admin()
+            try:
+                keycloak_admin.delete_user(user_id=keycloak_id)
+            except Exception as e:
+                # print(f"❌ Error deleting user from Keycloak: {str(e)}")
+                raise HTTPException(status_code=500, detail={
+                    "success": False,
+                    "error": {
+                        "code": "KEYCLOAK_DELETE_FAILED",
+                        "message": "Failed to delete user from Keycloak"
+                    }
+                })
+            
+            # Then delete associated data from database
+            db.query(Prompt).filter(Prompt.user_id == user_id).delete()
+            db.query(Credential).filter(Credential.user_id == user_id).delete()
+            db.delete(user)
+            db.commit()
+            
+            return {
+                "success": True,
+                "data": {
+                    "user_id": user_id,
+                    "username": user.username,
+                    "action": "deleted"
+                },
+                "message": "User and associated data deleted successfully"
+            }
+            
+        except HTTPException:
+            db.rollback()
+            raise
+        except Exception as e:
+            db.rollback()
+            # print(f"❌ Error deleting user: {str(e)}")
+            raise HTTPException(status_code=500, detail={
+                "success": False,
+                "error": {
+                    "code": "USER_DELETE_FAILED",
+                    "message": "Internal server error"
+                }
+            })
+        finally:
+            db.close()
+    except HTTPException:
+        raise
+    except Exception as e:
+        # print(f"❌ Unexpected error: {str(e)}")
+        raise HTTPException(status_code=500, detail={
+            "success": False,
+            "error": {
+                "code": "UNEXPECTED_ERROR",
+                "message": "Internal server error"
+            }
+        })
