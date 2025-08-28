@@ -32,7 +32,7 @@ export const api = {
     const requestBody = { 
       prompt, 
       provider,
-      credentials: credentialsName
+      credentials_name: credentialsName
     }
     
     try {

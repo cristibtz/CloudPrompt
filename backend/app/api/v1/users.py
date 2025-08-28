@@ -20,49 +20,7 @@ router = APIRouter()
 
 @router.post("/keycloak-webhook", 
              tags=["User Management"], 
-             summary="Keycloak webhook handler",
-             description="Handle user creation/update events from Keycloak authentication service",
-             responses={
-                 200: {
-                     "description": "Webhook processed successfully",
-                     "content": {
-                         "application/json": {
-                             "example": {
-                                 "success": True,
-                                 "message": "User created successfully"
-                             }
-                         }
-                     }
-                 },
-                 401: {
-                     "description": "Invalid webhook signature",
-                     "content": {
-                         "application/json": {
-                             "example": {
-                                 "success": False,
-                                 "error": {
-                                     "code": "INVALID_SIGNATURE",
-                                     "message": "Authentication failed"
-                                 }
-                             }
-                         }
-                     }
-                 },
-                 500: {
-                     "description": "Internal server error",
-                     "content": {
-                         "application/json": {
-                             "example": {
-                                 "success": False,
-                                 "error": {
-                                     "code": "INTERNAL_ERROR",
-                                     "message": "Failed to process webhook"
-                                 }
-                             }
-                         }
-                     }
-                 }
-             })
+             summary="Add user to app database upon Keycloak events")
 async def webhook_handler(
     request: Request,
     x_keycloak_signature: str = Header(None, alias="X-Keycloak-Signature")
@@ -176,47 +134,7 @@ async def webhook_handler(
 @router.get("/", 
             dependencies=[Depends(check_admin_role)], 
             tags=["User Management"],
-            summary="Get all users (Admin only)",
-            description="Retrieve all registered users in the system. Requires admin privileges.",
-            responses={
-                200: {
-                    "description": "Users retrieved successfully",
-                    "content": {
-                        "application/json": {
-                            "example": {
-                                "success": True,
-                                "data": [
-                                    {
-                                        "id": 1,
-                                        "username": "john_doe",
-                                        "email": "john@example.com",
-                                        "keycloak_id": "123e4567-e89b-12d3-a456-426614174000",
-                                        "credits": 100
-                                    }
-                                ],
-                                "message": "Users retrieved successfully"
-                            }
-                        }
-                    }
-                },
-                403: {
-                    "description": "Forbidden - Admin access required"
-                },
-                500: {
-                    "description": "Internal server error",
-                    "content": {
-                        "application/json": {
-                            "example": {
-                                "success": False,
-                                "error": {
-                                    "code": "INTERNAL_ERROR",
-                                    "message": "Failed to retrieve users"
-                                }
-                            }
-                        }
-                    }
-                }
-            })
+            summary="Get all users (Admin only)")
 async def get_users():
 
     try:
@@ -244,59 +162,7 @@ async def get_users():
 @router.get("/{user_id}", 
             dependencies=[Depends(check_admin_role)], 
             tags=["User Management"],
-            summary="Get specific user (Admin only)",
-            description="Retrieve details for a specific user by ID. Requires admin privileges.",
-            responses={
-                200: {
-                    "description": "User retrieved successfully",
-                    "content": {
-                        "application/json": {
-                            "example": {
-                                "success": True,
-                                "data": {
-                                    "id": 1,
-                                    "username": "john_doe",
-                                    "email": "john@example.com",
-                                    "keycloak_id": "123e4567-e89b-12d3-a456-426614174000",
-                                    "credits": 100
-                                },
-                                "message": "User retrieved successfully"
-                            }
-                        }
-                    }
-                },
-                404: {
-                    "description": "User not found",
-                    "content": {
-                        "application/json": {
-                            "example": {
-                                "success": False,
-                                "error": {
-                                    "code": "NOT_FOUND",
-                                    "message": "User not found"
-                                }
-                            }
-                        }
-                    }
-                },
-                403: {
-                    "description": "Forbidden - Admin access required"
-                },
-                500: {
-                    "description": "Internal server error",
-                    "content": {
-                        "application/json": {
-                            "example": {
-                                "success": False,
-                                "error": {
-                                    "code": "INTERNAL_ERROR",
-                                    "message": "Failed to retrieve user"
-                                }
-                            }
-                        }
-                    }
-                }
-            })
+            summary="Get specific user (Admin only)")
 async def get_user(user_id: int):
 
     try:
@@ -322,3 +188,10 @@ async def get_user(user_id: int):
         raise
     except Exception:
         raise HTTPException(status_code=500, detail="Internal server error")
+
+@router.delete("/{user_id}", 
+               dependencies=[Depends(check_admin_role)], 
+               tags=["User Management"],
+               summary="Delete specific user (Admin only)")
+async def delete_user(user_id: int):
+    pass

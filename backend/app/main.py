@@ -38,17 +38,10 @@ app.include_router(execute.router, prefix="/api/v1", tags=["Prompt Execution"])
 
 @app.get("/", 
          dependencies=[Depends(auth.valid_access_token)],
-         summary="Root endpoint",
-         description="Returns basic API information and version.",
-         response_description="API information with version number",
+         summary="API information and version",
          tags=["System"])
 async def root():
-    """
-    Get basic API information.
-    
-    Returns the API name and current version number.
-    Requires authentication to access.
-    """
+
     try:
         return {"response": "CloudPrompt API", "version": "0.0.2"}
     except Exception as e:
@@ -56,19 +49,9 @@ async def root():
 
 @app.get("/api/v1/health",
          summary="Health check",
-         description="Check if the API is running and responsive.",
-         response_description="API health status",
          tags=["System"])
 async def health_check():
-    """
-    Health check endpoint.
-    
-    Returns the operational status of the API.
-    Does not require authentication.
-    
-    Returns:
-        dict: Status response indicating if the API is operational
-    """
+
     try:
         return {"response": "ok"}
     except Exception as e:
