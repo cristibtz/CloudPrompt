@@ -19,20 +19,9 @@ router = APIRouter()
 
 class CreateCredentialRequest(BaseModel):
     """Request model for creating new credentials."""
-    provider: str = Field(..., 
-                         description="Cloud provider for the credentials",
-                         example="aws")
-    name: str = Field(..., 
-                     description="Unique name for the credential set",
-                     example="my-aws-production",
-                     min_length=1,
-                     max_length=50)
-    data: Dict[str, Any] = Field(..., 
-                                description="Provider-specific credential data",
-                                example={
-                                    "AWS_ACCESS_KEY_ID": "AKIAIOSFODNN7EXAMPLE",
-                                    "AWS_SECRET_ACCESS_KEY": "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
-                                })
+    provider: str 
+    name: str 
+    data: Dict[str, Any]
 
 providers = ["aws", "azure", "gcp", "proxmox"]
 max_creds_per_user = 5
@@ -40,9 +29,7 @@ max_creds_per_user = 5
 @router.post("/", 
              tags=["Credential Management"], 
              dependencies=[Depends(auth.valid_access_token)], 
-             summary="Create new credentials",
-             description="Store encrypted credentials for a specific cloud provider",
-             responses={200: {"description": "Success"}, 400: {"description": "Bad Request"}, 401: {"description": "Unauthorized"}, 500: {"description": "Internal Error"}})
+             summary="Create new credentials")
 async def create_credential(request: CreateCredentialRequest,
     token_data: Dict = Depends(auth.valid_access_token)
     ):
@@ -209,9 +196,7 @@ async def create_credential(request: CreateCredentialRequest,
 @router.get("/", 
             tags=["Credential Management"], 
             dependencies=[Depends(check_admin_role)], 
-            summary="Get all credentials (Admin only)",
-            description="Retrieve all stored credentials across all users. Requires admin privileges.",
-            responses={200: {"description": "Success"}, 403: {"description": "Forbidden"}, 500: {"description": "Internal Error"}})
+            summary="Get all credentials (Admin only)")
 async def get_credentials():
     try:
         db = next(get_db())
@@ -227,9 +212,7 @@ async def get_credentials():
 @router.get("/user", 
             tags=["Credential Management"], 
             dependencies=[Depends(auth.valid_access_token)], 
-            summary="Get user credentials",
-            description="Retrieve all credentials belonging to the authenticated user",
-            responses={200: {"description": "Success"}, 401: {"description": "Unauthorized"}, 500: {"description": "Internal Error"}})
+            summary="Get user credentials")
 async def get_user_credentials(token_data: Dict = Depends(auth.valid_access_token)):
     try:
         keycloak_id = token_data.get("sub")
@@ -253,11 +236,57 @@ async def get_user_credentials(token_data: Dict = Depends(auth.valid_access_toke
             }
         )
 
+@router.get("/{cred_id}", 
+            tags=["Credential Management"], 
+            dependencies=[Depends(auth.valid_access_token)], 
+            summary="Get credential details")
+async def get_credential_details(
+    cred_id: int,
+    token_data: Dict = Depends(auth.valid_access_token)
+):
+    try:
+        keycloak_id = token_data.get("sub")
+        user_id = get_id_by_kc_id(keycloak_id)
+        db = next(get_db())
+        cred = db.query(Credential).filter(Credential.id == cred_id, Credential.user_id == user_id).first()
+        if not cred:
+            raise HTTPException(
+                status_code=404, 
+                detail={
+                    "success": False,
+                    "error": {
+                        "code": "NOT_FOUND",
+                        "message": "Credential not found"
+                    }
+                }
+            )
+        return {
+            "success": True,
+            "data": {
+                "id": cred.id,
+                "name": cred.name,
+                "provider": cred.provider
+            },
+            "message": "Credential details retrieved successfully"
+        }
+    except HTTPException:
+        raise
+    except Exception:
+        raise HTTPException(
+            status_code=500, 
+            detail={
+                "success": False,
+                "error": {
+                    "code": "INTERNAL_ERROR",
+                    "message": "Failed to retrieve credential details"
+                }
+            }
+        )
+
 @router.delete("/{cred_id}", 
-               tags=["Credential Management"], 
-               summary="Delete credential",
-               description="Delete a specific credential belonging to the authenticated user",
-               responses={200: {"description": "Success"}, 404: {"description": "Not Found"}, 401: {"description": "Unauthorized"}, 500: {"description": "Internal Error"}})
+               tags=["Credential Management"],
+               dependencies=[Depends(auth.valid_access_token)], 
+               summary="Delete credential")
 async def delete_credential(
     cred_id: int,
     token_data: Dict = Depends(auth.valid_access_token)
