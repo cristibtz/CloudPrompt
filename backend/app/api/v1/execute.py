@@ -8,6 +8,14 @@ from pydantic import BaseModel, Field
 from typing import Optional, Dict, Any
 import json, base64
 
+from app.utils.crypto import decrypt_data
+
+from dotenv import load_dotenv
+import os
+load_dotenv(os.path.join(os.path.dirname(__file__), '../../','.env'))
+
+key = bytes.fromhex(os.getenv("ENCRYPTION_KEY")) 
+
 router = APIRouter()
 
 class ExecuteRequest(BaseModel):
@@ -90,7 +98,7 @@ async def execute(request: ExecuteRequest, token_data: Dict = Depends(auth.valid
             ).first()
             
             if credential:
-                credentials_data = json.loads(base64.b64decode(credential.data).decode('utf-8'))
+                credentials_data = json.loads(decrypt_data(key, credential.data))
         except Exception:
             pass
     

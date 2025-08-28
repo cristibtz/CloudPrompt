@@ -9,3 +9,4 @@ python-keycloak
 PyJWT[crypto]
 typing
 python-keycloak
+cryptography

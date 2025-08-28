@@ -95,3 +95,8 @@ VITE_KEYCLOAK_CLIENT_ID=cloudprompt-client
 ```bash
 python3 cloudprompt/cli/cli_client.py -p "List ec2 instances" -c "aws"
 ```
+
+## Crypto Key
+```
+python3 -c "import secrets; print(secrets.token_hex(32))"
+```
