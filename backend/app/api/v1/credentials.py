@@ -13,6 +13,10 @@ from app.models.user import User
 from app.models.prompts import Prompt
 from app.models.credentials import Credential
 
+from app.utils.crypto import encrypt_data
+
+key = bytes.fromhex(os.getenv("ENCRYPTION_KEY"))
+
 load_dotenv(os.path.join(os.path.dirname(__file__), '../../../','.env'))
 
 router = APIRouter()
@@ -159,11 +163,13 @@ async def create_credential(request: CreateCredentialRequest,
                 }
             )
         
+
+
         new_cred = Credential(
             user_id=user_id,
             provider=provider,
             name=name,
-            data=base64.b64encode(json.dumps(data).encode('utf-8')).decode('utf-8')
+            data=encrypt_data(key, json.dumps(data))
         )
         db.add(new_cred)
         db.commit()
