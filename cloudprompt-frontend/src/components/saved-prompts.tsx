@@ -228,7 +228,7 @@ export function SavedPrompts({ refreshTrigger }: SavedPromptsProps) {
                       {/* Response Preview */}
                       <div className="text-sm text-[#B0BEC5]">
                         <span className="font-medium">Response: </span>
-                        {truncateText(prompt.response, 80)}
+                        {truncateText(prompt.response, 20)}
                       </div>
                     </div>
                     
