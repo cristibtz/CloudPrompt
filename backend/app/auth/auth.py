@@ -15,7 +15,6 @@ oauth_2_scheme = OAuth2AuthorizationCodeBearer(
     refreshUrl=f"{os.getenv('KEYCLOAK_SERVER_URL')}/realms/cloudprompt/protocol/openid-connect/token",
 )
 
-
 async def valid_access_token(
     access_token: Annotated[str, Depends(oauth_2_scheme)]
 ):

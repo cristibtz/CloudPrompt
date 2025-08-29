@@ -163,8 +163,6 @@ async def create_credential(request: CreateCredentialRequest,
                 }
             )
         
-
-
         new_cred = Credential(
             user_id=user_id,
             provider=provider,
