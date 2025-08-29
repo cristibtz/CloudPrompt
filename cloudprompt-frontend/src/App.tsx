@@ -4,6 +4,7 @@ import { Header } from "@/components/header"
 import { PromptInput } from "@/components/prompt-form"
 import { ResultsCanvas } from "@/components/results-canvas"
 import { CredentialsForm } from "@/components/credentials-form"
+import { SavedPrompts } from "@/components/saved-prompts"
 import { api } from "@/services/api"
 import { toast } from "sonner"
 import { KeycloakProvider } from "./auth/KeycloakProvider"
@@ -15,6 +16,13 @@ function MainApp() {
   const [results, setResults] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
+  const [lastExecutedPrompt, setLastExecutedPrompt] = useState<{
+    prompt: string
+    provider: string
+    response: string
+  } | null>(null)
+  const [promptRefreshTrigger, setPromptRefreshTrigger] = useState(0)
+  const [credentialsRefreshTrigger, setCredentialsRefreshTrigger] = useState(0)
   
   // Get token from Keycloak context
   const { token } = useKeycloak()
@@ -29,13 +37,17 @@ function MainApp() {
 
       const response = await api.executeCommand(prompt, provider, credentialsName, token)
 
-      if (response?.message) {
-        setResults(response.message)
-      } else {
-        setResults(JSON.stringify(response, null, 2))
-      }
+      const responseText = response?.message ? response.message : JSON.stringify(response, null, 2)
+      setResults(responseText)
       
-      toast.success('Command executed successfully!')
+      // Store the executed prompt for potential saving
+      setLastExecutedPrompt({
+        prompt,
+        provider,
+        response: responseText
+      })
+      
+      toast.success('Prompt executed successfully!')
 
     } catch (err: any) {
       console.error('Command execution failed:', err)
@@ -59,15 +71,51 @@ function MainApp() {
     }
   }
 
+  const handleSavePrompt = async () => {
+    if (!lastExecutedPrompt || !token) {
+      toast.error('No prompt to save')
+      return
+    }
+
+    try {
+      await api.savePrompt(lastExecutedPrompt, token)
+      toast.success('Prompt saved successfully!')
+      setPromptRefreshTrigger(prev => prev + 1)
+    } catch (err: any) {
+      toast.error('Failed to save prompt', {
+        description: err.message
+      })
+    }
+  }
+
+  const handleCredentialsAdded = () => {
+    setCredentialsRefreshTrigger(prev => prev + 1)
+    toast.success('Credentials added successfully!')
+  }
+
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-[#E3F2FD] via-white to-[#F3E5F5]">
       <Header />
 
-      <main className="flex-1 container mx-auto p-4 sm:p-6">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full">
-          {/* Left side - Main content */}
-          <div className="lg:col-span-2 space-y-4 sm:space-y-6">
-            <PromptInput onSubmit={handlePromptSubmit} />
+      <main className="flex-1 max-w-full px-2 sm:px-4 py-4 sm:py-6">
+        <div className="grid grid-cols-1 xl:grid-cols-7 gap-3 sm:gap-4 h-full max-w-[98vw] mx-auto">
+          {/* Left side - Saved Prompts */}
+          <div className="xl:col-span-2 order-2 xl:order-1">
+            <div className="sticky top-6">
+              <SavedPrompts 
+                refreshTrigger={promptRefreshTrigger}
+              />
+            </div>
+          </div>
+          
+          {/* Center - Main content - Bigger space for prompt form */}
+          <div className="xl:col-span-3 order-1 xl:order-2 space-y-4 sm:space-y-6">
+            <PromptInput 
+              onSubmit={handlePromptSubmit}
+              onSave={handleSavePrompt}
+              canSave={!!lastExecutedPrompt}
+              credentialsRefreshTrigger={credentialsRefreshTrigger}
+            />
             
             {error && (
               <div className="bg-red-50 border border-red-200 rounded-lg p-4">
@@ -89,9 +137,9 @@ function MainApp() {
           </div>
 
           {/* Right side - Credentials form */}
-          <div className="lg:col-span-1">
+          <div className="xl:col-span-2 order-3">
             <div className="sticky top-6">
-              <CredentialsForm />
+              <CredentialsForm onCredentialsAdded={handleCredentialsAdded} />
             </div>
           </div>
         </div>

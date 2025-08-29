@@ -48,7 +48,11 @@ const PROVIDERS = {
   }
 }
 
-export function CredentialsForm() {
+interface CredentialsFormProps {
+  onCredentialsAdded?: () => void
+}
+
+export function CredentialsForm({ onCredentialsAdded }: CredentialsFormProps) {
   const [selectedProvider, setSelectedProvider] = useState<string>('')
   const [credentialName, setCredentialName] = useState<string>('')
   const [formData, setFormData] = useState<CredentialData>({})
@@ -90,6 +94,9 @@ export function CredentialsForm() {
       setFormData({})
       setCredentialName('')
       setSelectedProvider('')
+      
+      // Trigger credentials refresh
+      onCredentialsAdded?.()
     } catch (error: any) {
       setMessage({ 
         type: 'error', 
@@ -111,10 +118,12 @@ export function CredentialsForm() {
   const selectedProviderConfig = selectedProvider ? PROVIDERS[selectedProvider as keyof typeof PROVIDERS] : null
 
   return (
-    <div className="bg-white rounded-lg shadow-lg border border-[#B0BEC5]/20 p-4 sm:p-6 w-full">
+    <div className="bg-white rounded-lg shadow-lg border border-[#6565fc]/30 p-4 sm:p-6 w-full">
       <div className="mb-4">
         <h2 className="text-lg sm:text-xl font-bold text-[#0B1C37] mb-2 flex items-center gap-2">
-          <Key className="h-5 w-5 text-[#2196F3]" />
+          <div className="h-6 w-6 bg-[#6565fc] rounded-lg flex items-center justify-center">
+            <Key className="h-3 w-3 text-white" />
+          </div>
           Cloud Credentials
         </h2>
         <p className="text-[#B0BEC5] text-xs sm:text-sm">
@@ -127,7 +136,7 @@ export function CredentialsForm() {
         <div className="space-y-2">
           <label htmlFor="provider" className="block text-sm font-medium text-[#0B1C37]">Provider</label>
           <Select value={selectedProvider} onValueChange={handleProviderChange}>
-            <SelectTrigger className="w-full p-2 border-2 border-[#B0BEC5]/30 rounded-lg focus:border-[#2196F3] focus:outline-none focus:ring-2 focus:ring-[#2196F3]/20 transition-all duration-300">
+            <SelectTrigger className="w-full p-2 border-2 border-[#B0BEC5]/30 rounded-lg focus:border-[#6565fc] focus:outline-none focus:ring-2 focus:ring-[#6565fc]/20 transition-all duration-300">
               <SelectValue placeholder="Select provider" />
             </SelectTrigger>
             <SelectContent className="bg-white border-2 border-[#B0BEC5]/30 shadow-lg">
@@ -204,7 +213,7 @@ export function CredentialsForm() {
           <Button 
             type="submit" 
             disabled={!isFormValid() || isLoading}
-            className="w-full bg-[#2196F3] hover:bg-[#64B5F6] text-white px-4 py-2 rounded-lg font-semibold transition-all duration-300 cursor-pointer hover:scale-105 hover:shadow-lg text-sm"
+            className="w-full bg-[#6565fc] hover:bg-[#512DA8] text-white px-4 py-2 rounded-lg font-semibold transition-all duration-300 cursor-pointer hover:scale-105 hover:shadow-lg text-sm"
           >
             {isLoading ? (
               <div className="flex items-center justify-center">
