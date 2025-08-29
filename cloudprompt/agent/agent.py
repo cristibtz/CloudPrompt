@@ -8,6 +8,7 @@ from typing import Union, Callable
 import logfire
 from rich.console import Console
 from pydantic_ai.common_tools.duckduckgo import duckduckgo_search_tool
+from pydantic_ai.toolsets import CombinedToolset
 
 
 console = Console()
@@ -33,7 +34,7 @@ class CloudAgentBase:
         self.SYSTEM_PROMPT = (
             f"You are a helpful assistant for {self.CLOUD_TYPE} management.\n"
             f"Use the right MCP tools to answer user queries as accurately as possible.\n"
-            f"Infer the right arguments for the tools based on the user input.\n"
+            f"If an MCP tool is not proper, search the web for the information.\n"
         )
 
     async def run(self, user_input: str, credentials: dict = None):
@@ -76,8 +77,8 @@ class CloudAgentBase:
             name="Assistant",
             system_prompt=self.SYSTEM_PROMPT,
             model=self.model,
-            toolsets=[self.server],
             tools=[duckduckgo_search_tool()],
+            toolsets=[self.server],
             prepare_tools=self.TOOL_FILTER
         )
 
@@ -103,12 +104,12 @@ class CloudAgentBase:
 async def filter_aws_tools(
     ctx: RunContext[None], tool_defs: list[ToolDefinition]
 ) -> Union[list[ToolDefinition], None]:
-    """Filter to only AWS tools"""
+    """Filter to only AWS tools + DuckDuckGo search"""
     aws_tools = [
         "create_ec2_instance", "start_ec2_instance", "stop_ec2_instance", 
         "terminate_ec2_instance", "list_ec2_instances", "get_amis", 
         "create_s3_bucket", "delete_s3_bucket", "delete_s3_bucket_object",
-        "list_s3_buckets", "list_s3_bucket_objects"
+        "list_s3_buckets", "list_s3_bucket_objects", "duckduckgo_search",
     ]
     return [tool_def for tool_def in tool_defs if tool_def.name in aws_tools]
 
