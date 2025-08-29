@@ -3,7 +3,6 @@ import hmac
 from fastapi import HTTPException, Header, APIRouter, Request, Depends
 from dotenv import load_dotenv
 import os, json
-from typing import Dict
 
 from app.utils.get_email_by_id import get_email_by_id
 from app.utils.check_admin_role import check_admin_role

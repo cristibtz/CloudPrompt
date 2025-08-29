@@ -1,8 +1,8 @@
 from fastapi import HTTPException, Header, APIRouter, Request, Depends
 from dotenv import load_dotenv
 import os, json, base64
-from pydantic import BaseModel, Field
-from typing import Optional, Dict, Any
+from pydantic import BaseModel
+from typing import Dict, Any
 
 from app.auth import auth
 from app.utils.check_admin_role import check_admin_role
