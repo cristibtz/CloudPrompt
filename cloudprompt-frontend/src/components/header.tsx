@@ -33,7 +33,7 @@ export function Header() {
                         <NavigationMenuItem className="bg-[#6565fc] rounded-md hover:bg-[#512DA8] transition-colors duration-300">
                             <NavigationMenuLink 
                                 href="/"
-                                className="text-[#000000] text-lg font-semibold px-4 py-2 hover:text-[white] transition-colors duration-300"
+                                className="text-white text-lg font-semibold px-4 py-2 hover:text-white transition-colors duration-300"
                                 >
                                 Home
                             </NavigationMenuLink>
@@ -42,7 +42,7 @@ export function Header() {
                         <NavigationMenuItem className="bg-[#6565fc] rounded-md hover:bg-[#512DA8] transition-colors duration-300">
                             <NavigationMenuLink 
                                 href="#" 
-                                className="text-[#000000] text-lg font-semibold px-4 py-2 hover:text-[white] transition-colors duration-300"
+                                className="text-white text-lg font-semibold px-4 py-2 hover:text-white transition-colors duration-300"
                                 >
                                 User Profile
                             </NavigationMenuLink>
@@ -50,11 +50,11 @@ export function Header() {
                     </NavigationMenuList>
                 </NavigationMenu>
 
-                <div className="flex justify-end items-center space-x-4">
+                                <div className="flex justify-end items-center space-x-4">
                     {authenticated && (
                         <>
-                            <span className="text-sm text-gray-300">
-                                Welcome, {keycloak?.tokenParsed?.preferred_username || 'User'}
+                            <span className="text-sm bg-[#6565fc]/20 px-3 py-1 rounded-full border border-[#6565fc]/30">
+                                Logged in as <span className="text-[#6565fc] font-medium">{keycloak?.tokenParsed?.preferred_username || 'User'}</span>
                             </span>
                             <button
                                 onClick={logout}
@@ -103,23 +103,31 @@ export function Header() {
                     <div className="mt-4 space-y-2 border-t border-[#B0BEC5]/20 pt-4">
                         <a 
                             href="/"
-                            className="block w-full text-left px-4 py-3 bg-[#6565fc] rounded-md hover:bg-[#512DA8] transition-colors duration-300 text-[#000000] text-lg font-semibold hover:text-white"
+                            className="block w-full text-left px-4 py-3 bg-[#6565fc] rounded-md hover:bg-[#512DA8] transition-colors duration-300 text-white text-lg font-semibold"
                         >
                             Home
                         </a>
                         <a 
                             href="#"
-                            className="block w-full text-left px-4 py-3 bg-[#6565fc] rounded-md hover:bg-[#512DA8] transition-colors duration-300 text-[#000000] text-lg font-semibold hover:text-white"
+                            className="block w-full text-left px-4 py-3 bg-[#6565fc] rounded-md hover:bg-[#512DA8] transition-colors duration-300 text-white text-lg font-semibold"
                         >
                             User Profile
                         </a>
                         {authenticated && (
-                            <button
-                                onClick={logout}
-                                className="block w-full text-left px-4 py-3 bg-red-600 rounded-md hover:bg-red-700 transition-colors duration-300 text-white text-lg font-semibold"
-                            >
-                                Logout
-                            </button>
+                            <>
+                                <div className="px-4 py-2 text-sm bg-[#1E3A8A]/20 rounded-lg border border-[#3B82F6]/30 flex items-center space-x-2">
+                                    <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                                    <span className="text-gray-200">
+                                        in as <span className="text-[#60A5FA] font-semibold">{keycloak?.tokenParsed?.preferred_username || 'User'}</span>
+                                    </span>
+                                </div>
+                                <button
+                                    onClick={logout}
+                                    className="block w-full text-left px-4 py-3 bg-red-600 rounded-md hover:bg-red-700 transition-colors duration-300 text-white text-lg font-semibold"
+                                >
+                                    Logout
+                                </button>
+                            </>
                         )}
                     </div>
                 )}

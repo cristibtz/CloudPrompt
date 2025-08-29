@@ -8,10 +8,10 @@ createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <App />
     <Toaster 
-      position="top-right"
+      position="bottom-right"
       richColors
       expand={true}
-      duration={4000}
+      duration={2000}
     />
   </StrictMode>,
 )
