@@ -157,7 +157,8 @@ def register_tools(mcp):
         StorageSize: int = 8,
         VolumeType: str = "gp3",
         aws_access_key_id: str = None,
-        aws_secret_access_key: str = None
+        aws_secret_access_key: str = None,
+        name: str = None
     ):
         '''
         Create an EC2 instance with specified parameters.
@@ -170,6 +171,7 @@ def register_tools(mcp):
         :param region_name: str -  AWS region name (default is "us-east-1").
         :param aws_access_key_id: str - AWS Access Key ID (optional, uses environment if not provided).
         :param aws_secret_access_key: str - AWS Secret Access Key (optional, uses environment if not provided).
+        :param name: str - Optional name tag for the instance.
         :return:  Dict[str, List[Dict[str, str]]] - Information about the created instances.
         '''
         logger.info(f"Creating EC2 instance: MinCount={MinCount}, MaxCount={MaxCount}, InstanceType={InstanceType}, ImageId={ImageId}, StorageSize={StorageSize}, VolumeType={VolumeType}, region={region_name}")
@@ -211,6 +213,12 @@ def register_tools(mcp):
                             'DeleteOnTermination': True,
                             'VolumeType': VolumeType
                         }
+                    }
+                ],
+                TagSpecifications=[
+                    {
+                        'ResourceType': 'instance',
+                        'Tags': [{'Key': 'Name', 'Value': name}] if name else []
                     }
                 ]
             )
