@@ -35,6 +35,8 @@ class CloudAgentBase:
             f"You are a helpful assistant for {self.CLOUD_TYPE} management.\n"
             f"Use the right MCP tools to answer user queries as accurately as possible.\n"
             f"If an MCP tool is not proper, search the web for the information.\n"
+            f"Don't hesitate to execute a tool if this is what the user asked. Don't ask for confirmations regarding creating, \
+            deleteting, updating, or listing resources.\n"
         )
 
     async def run(self, user_input: str, credentials: dict = None):
