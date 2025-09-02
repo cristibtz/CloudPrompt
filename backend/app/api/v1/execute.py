@@ -1,6 +1,7 @@
 from fastapi import APIRouter, HTTPException, Depends
 from app.auth import auth
 from cloudprompt.agent.router_agent import execute_provider
+from cloudprompt.agent.agent import clear_user_session
 from app.utils.get_id_by_kc_id import get_id_by_kc_id
 from app.database.db import get_db
 from app.models.credentials import Credential
@@ -103,7 +104,10 @@ async def execute(request: ExecuteRequest, token_data: Dict = Depends(auth.valid
             pass
     
     try:
-        result = await execute_provider(provider, user_input, credentials_data)
+        # Get keycloak_id for session management
+        keycloak_id = token_data.get("sub")
+        
+        result = await execute_provider(provider, user_input, credentials_data, keycloak_id=keycloak_id)
         output = result.output
         
         try:
@@ -124,6 +128,7 @@ async def execute(request: ExecuteRequest, token_data: Dict = Depends(auth.valid
     except HTTPException:
         raise
     except Exception as e:
+        print(f"Execution error: {str(e)}")
         raise HTTPException(
             status_code=500,
             detail={
@@ -131,6 +136,38 @@ async def execute(request: ExecuteRequest, token_data: Dict = Depends(auth.valid
                 "error": {
                     "code": "EXECUTION_FAILED",
                     "message": "Prompt execution failed"
+                }
+            }
+        )
+
+@router.post("/clear_session", 
+             dependencies=[Depends(auth.valid_access_token)], 
+             tags=["Session Management"],
+             summary="Clear user session")
+async def clear_session(token_data: Dict = Depends(auth.valid_access_token)):
+    """Clear the current user's cloud provider session tokens."""
+    try:
+        keycloak_id = token_data.get("sub")
+        
+        # Clear the user's session
+        clear_user_session(keycloak_id)
+        
+        return {
+            "success": True,
+            "message": "Session cleared successfully",
+            "data": {
+                "session_id": keycloak_id,
+                "action": "session_cleared"
+            }
+        }
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail={
+                "success": False,
+                "error": {
+                    "code": "SESSION_CLEAR_FAILED",
+                    "message": f"Failed to clear session: {str(e)}"
                 }
             }
         )
