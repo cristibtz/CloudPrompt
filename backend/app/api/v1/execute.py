@@ -124,6 +124,7 @@ async def execute(request: ExecuteRequest, token_data: Dict = Depends(auth.valid
     except HTTPException:
         raise
     except Exception as e:
+        print(f"Execution error: {e}")
         raise HTTPException(
             status_code=500,
             detail={
