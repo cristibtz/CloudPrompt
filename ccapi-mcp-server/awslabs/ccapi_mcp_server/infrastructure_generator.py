@@ -15,7 +15,7 @@
 """Infrastructure code generation utilities for the CFN MCP Server."""
 
 import json
-from awslabs.ccapi_mcp_server.aws_client import get_aws_client
+from awslabs.ccapi_mcp_server.aws_client import get_aws_client, get_aws_client_with_credentials
 from awslabs.ccapi_mcp_server.cloud_control_utils import add_default_tags
 from awslabs.ccapi_mcp_server.errors import ClientError, handle_aws_api_error
 from awslabs.ccapi_mcp_server.schema_manager import schema_manager
@@ -28,6 +28,7 @@ async def generate_infrastructure_code(
     identifier: str = '',
     patch_document: List = [],
     region: str = '',
+    aws_session_data: Dict = None,
 ) -> Dict:
     """Generate infrastructure code for security scanning before resource creation or update."""
     if not resource_type:
@@ -38,7 +39,7 @@ async def generate_infrastructure_code(
 
     # Validate the resource type against the schema
     sm = schema_manager()
-    schema = await sm.get_schema(resource_type, region)
+    schema = await sm.get_schema(resource_type, region, aws_session_data)
 
     # Check if resource supports tagging
     supports_tagging = 'Tags' in schema.get('properties', {})
@@ -60,7 +61,16 @@ async def generate_infrastructure_code(
             raise ClientError('Please provide a resource identifier for update operations')
 
         # Get the current resource state
-        cloudcontrol_client = get_aws_client('cloudcontrol', region)
+        if aws_session_data and aws_session_data.get('aws_access_key_id') and aws_session_data.get('aws_secret_access_key'):
+            cloudcontrol_client = get_aws_client_with_credentials(
+                'cloudcontrol',
+                region,
+                aws_session_data['aws_access_key_id'],
+                aws_session_data['aws_secret_access_key'],
+                aws_session_data.get('aws_session_token')
+            )
+        else:
+            cloudcontrol_client = get_aws_client('cloudcontrol', region)
         try:
             current_resource = cloudcontrol_client.get_resource(
                 TypeName=resource_type, Identifier=identifier

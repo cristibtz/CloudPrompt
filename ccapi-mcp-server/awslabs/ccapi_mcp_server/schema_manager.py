@@ -14,7 +14,7 @@
 
 import json
 import os
-from awslabs.ccapi_mcp_server.aws_client import get_aws_client
+from awslabs.ccapi_mcp_server.aws_client import get_aws_client, get_aws_client_with_credentials
 from awslabs.ccapi_mcp_server.errors import ClientError
 from datetime import datetime, timedelta
 from pathlib import Path
@@ -80,7 +80,7 @@ class SchemaManager:
             except (json.JSONDecodeError, IOError) as e:
                 print(f'Error loading schema from {schema_file}: {str(e)}')
 
-    async def get_schema(self, resource_type: str, region: str | None = None) -> dict:
+    async def get_schema(self, resource_type: str, region: str | None = None, aws_session_data: dict = None) -> dict:
         """Get schema for a resource type, downloading it if necessary."""
         # Check if schema is in registry
         if resource_type in self.schema_registry:
@@ -118,11 +118,11 @@ class SchemaManager:
                     return cached_schema
 
         # Download schema (either not cached, expired, or corrupted)
-        schema = await self._download_resource_schema(resource_type, region)
+        schema = await self._download_resource_schema(resource_type, region, aws_session_data)
         return schema
 
     async def _download_resource_schema(
-        self, resource_type: str, region: str | None = None
+        self, resource_type: str, region: str | None = None, aws_session_data: dict = None
     ) -> dict:
         """Download schema for a specific resource type.
 
@@ -148,7 +148,19 @@ class SchemaManager:
                 print(
                     f'Downloading schema for {resource_type} using CloudFormation API (attempt {attempt + 1}/{max_retries})'
                 )
-                cfn_client = get_aws_client('cloudformation', region)
+                
+                # Use explicit credentials if provided, otherwise fall back to default
+                if aws_session_data and aws_session_data.get('aws_access_key_id') and aws_session_data.get('aws_secret_access_key'):
+                    cfn_client = get_aws_client_with_credentials(
+                        'cloudformation',
+                        region,
+                        aws_session_data['aws_access_key_id'],
+                        aws_session_data['aws_secret_access_key'],
+                        aws_session_data.get('aws_session_token')
+                    )
+                else:
+                    cfn_client = get_aws_client('cloudformation', region)
+                    
                 resp = cfn_client.describe_type(Type='RESOURCE', TypeName=resource_type)
                 schema_str = resp['Schema']
 
