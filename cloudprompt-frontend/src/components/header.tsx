@@ -6,10 +6,28 @@ import {
 } from "@/components/ui/navigation-menu"
 import { useState } from "react"
 import { useKeycloak } from "../auth/KeycloakContext"
+import { api } from "../services/api"
 
 export function Header() {
     const [isMenuOpen, setIsMenuOpen] = useState(false)
+    const [isClearingSession, setIsClearingSession] = useState(false)
     const { authenticated, logout, keycloak } = useKeycloak()
+
+    const clearSession = async () => {
+        if (!keycloak?.token) return
+        
+        setIsClearingSession(true)
+        try {
+            await api.clearSession(keycloak.token)
+            // Show success message or handle success
+            console.log('Session cleared successfully')
+        } catch (error) {
+            console.error('Failed to clear session:', error)
+            // Handle error - could show a toast notification
+        } finally {
+            setIsClearingSession(false)
+        }
+    }
 
     return (
         <header className="bg-[#0B1C37] text-white p-4 w-full border-b border-[#B0BEC5]/20">
@@ -50,12 +68,19 @@ export function Header() {
                     </NavigationMenuList>
                 </NavigationMenu>
 
-                                <div className="flex justify-end items-center space-x-4">
+                <div className="flex justify-end items-center space-x-4">
                     {authenticated && (
                         <>
                             <span className="text-sm bg-[#6565fc]/20 px-3 py-1 rounded-full border border-[#6565fc]/30">
                                 Logged in as <span className="text-[#6565fc] font-medium">{keycloak?.tokenParsed?.preferred_username || 'User'}</span>
                             </span>
+                            <button
+                                onClick={clearSession}
+                                disabled={isClearingSession}
+                                className="bg-orange-600 hover:bg-orange-700 disabled:bg-orange-400 disabled:cursor-not-allowed px-4 py-2 rounded-md text-white text-sm font-medium transition-colors duration-300"
+                            >
+                                {isClearingSession ? 'Clearing...' : 'Clear Session'}
+                            </button>
                             <button
                                 onClick={logout}
                                 className="bg-red-600 hover:bg-red-700 px-4 py-2 rounded-md text-white text-sm font-medium transition-colors duration-300"
@@ -121,6 +146,13 @@ export function Header() {
                                         in as <span className="text-[#60A5FA] font-semibold">{keycloak?.tokenParsed?.preferred_username || 'User'}</span>
                                     </span>
                                 </div>
+                                <button
+                                    onClick={clearSession}
+                                    disabled={isClearingSession}
+                                    className="block w-full text-left px-4 py-3 bg-orange-600 hover:bg-orange-700 disabled:bg-orange-400 disabled:cursor-not-allowed rounded-md transition-colors duration-300 text-white text-lg font-semibold"
+                                >
+                                    {isClearingSession ? 'Clearing...' : 'Clear Session'}
+                                </button>
                                 <button
                                     onClick={logout}
                                     className="block w-full text-left px-4 py-3 bg-red-600 rounded-md hover:bg-red-700 transition-colors duration-300 text-white text-lg font-semibold"

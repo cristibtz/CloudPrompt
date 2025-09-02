@@ -277,5 +277,41 @@ export const api = {
         throw new Error('Failed to delete prompt')
       }
     }
+  },
+
+  clearSession: async (token?: string) => {
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    }
+    
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`
+    }
+    
+    try {
+      const response = await apiClient.post('/clear_session', {}, {
+        headers
+      })
+      
+      const result: ApiResponse = response.data
+      if (!result.success) {
+        throw new Error(result.error?.message || 'Failed to clear session')
+      }
+      
+      return result
+    } catch (error: any) {
+      // Handle HTTP error responses (400, 500, etc.)
+      if (error.response?.data?.detail?.error?.message) {
+        throw new Error(error.response.data.detail.error.message)
+      } else if (error.response?.data?.detail) {
+        throw new Error(error.response.data.detail)
+      } else if (error.response?.data?.error?.message) {
+        throw new Error(error.response.data.error.message)
+      } else if (error.message) {
+        throw new Error(error.message)
+      } else {
+        throw new Error('Failed to clear session')
+      }
+    }
   }
 }
