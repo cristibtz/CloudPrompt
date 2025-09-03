@@ -1,6 +1,7 @@
 import boto3
 from botocore.exceptions import ClientError
 import logging
+from .auth_tools import get_aws_client, get_aws_session_region
 
 OFFICIAL_OWNERS = {
     "Amazon Linux": ["amazon"],            # alias supported
@@ -40,30 +41,27 @@ def register_tools(mcp):
 
     @mcp.tool()
     async def get_amis(
-        region_name: str = "us-east-1",
-        aws_access_key_id: str = None,
-        aws_secret_access_key: str = None
+        session_id: str
     ):
         '''
         Get list of AMIs to create EC2 instances from.
-        :param region_name: str - AWS region name (default is "us-east-1").
-        :param aws_access_key_id: str - AWS Access Key ID (optional, uses environment if not provided).
-        :param aws_secret_access_key: str - AWS Secret Access Key (optional, uses environment if not provided).
+        REQUIRES: authenticate_aws must be called first to establish a session.
+        
+        :param session_id: str - AWS session identifier from authenticate_aws.
         :return: Dict with region, total, and list of AMIs.
         '''
+        # Get authenticated EC2 client
+        ec2 = get_aws_client('ec2', session_id)
+        if not ec2:
+            return {
+                "error": f"No authenticated session found for '{session_id}'. Please call authenticate_aws first."
+            }
+        
+        region_name = get_aws_session_region(session_id)
         max_total = 15
         logger.info(f"Fetching Linux free-tier-friendly AMIs for region {region_name} (max_total={max_total})")
+        
         try:
-            # Create EC2 client with optional credentials
-            if aws_access_key_id and aws_secret_access_key:
-                ec2 = boto3.client(
-                    'ec2',
-                    region_name=region_name,
-                    aws_access_key_id=aws_access_key_id,
-                    aws_secret_access_key=aws_secret_access_key
-                )
-            else:
-                ec2 = boto3.client('ec2', region_name=region_name)
 
             quota = max(1, max_total // len(ordered_distros))
 
@@ -153,38 +151,36 @@ def register_tools(mcp):
         MaxCount: int,
         InstanceType: str,
         ImageId: str,
-        region_name: str = "us-east-1",
+        session_id: str,
         StorageSize: int = 8,
         VolumeType: str = "gp3",
-        aws_access_key_id: str = None,
-        aws_secret_access_key: str = None,
         name: str = None
     ):
         '''
         Create an EC2 instance with specified parameters.
+        REQUIRES: authenticate_aws must be called first to establish a session.
+        
         :param MinCount: int - Minimum number of instances to launch.
         :param MaxCount: int -Maximum number of instances to launch.
         :param InstanceType: str - Type of instance to launch (e.g., "t2.micro").
         :param ImageId: str - ID of the AMI to use for the instance.
+        :param session_id: str - AWS session identifier from authenticate_aws.
         :param StorageSize: int - Size of the root volume in GB (default is 8).
         :param VolumeType: str - Type of volume to create (default is "gp3").
-        :param region_name: str -  AWS region name (default is "us-east-1").
-        :param aws_access_key_id: str - AWS Access Key ID (optional, uses environment if not provided).
-        :param aws_secret_access_key: str - AWS Secret Access Key (optional, uses environment if not provided).
         :param name: str - Optional name tag for the instance.
         :return:  Dict[str, List[Dict[str, str]]] - Information about the created instances.
         '''
+        # Get authenticated EC2 client
+        ec2 = get_aws_client('ec2', session_id)
+        if not ec2:
+            return {
+                "error": f"No authenticated session found for '{session_id}'. Please call authenticate_aws first."
+            }
+        
+        region_name = get_aws_session_region(session_id)
         logger.info(f"Creating EC2 instance: MinCount={MinCount}, MaxCount={MaxCount}, InstanceType={InstanceType}, ImageId={ImageId}, StorageSize={StorageSize}, VolumeType={VolumeType}, region={region_name}")
+        
         try:
-            if aws_access_key_id and aws_secret_access_key:
-                ec2 = boto3.client(
-                    'ec2',
-                    region_name=region_name,
-                    aws_access_key_id=aws_access_key_id,
-                    aws_secret_access_key=aws_secret_access_key
-                )
-            else:
-                ec2 = boto3.client('ec2', region_name=region_name)
 
             # Get minimum required root volume size from the AMI
             try:
@@ -240,31 +236,27 @@ def register_tools(mcp):
     @mcp.tool()
     async def stop_ec2_instance(
         instance_id: str,
-        region_name: str = "us-east-1",
-        aws_access_key_id: str = None,
-        aws_secret_access_key: str = None
+        session_id: str
     ):
         '''
         Stop an EC2 instance by its ID.
+        REQUIRES: authenticate_aws must be called first to establish a session.
+        
         :param instance_id: str - ID of the EC2 instance to stop.
-        :param region_name: str - AWS region name (default is "us-east-1").
-        :param aws_access_key_id: str - AWS Access Key ID (optional, uses environment if not provided).
-        :param aws_secret_access_key: str - AWS Secret Access Key (optional, uses environment if not provided).
+        :param session_id: str - AWS session identifier from authenticate_aws.
         :return: Dict[str, str] - Information about the stopped instance.
         '''
+        # Get authenticated EC2 client
+        ec2 = get_aws_client('ec2', session_id)
+        if not ec2:
+            return {
+                "error": f"No authenticated session found for '{session_id}'. Please call authenticate_aws first."
+            }
+        
+        region_name = get_aws_session_region(session_id)
         logger.info(f"Stopping EC2 instance: {instance_id} in region {region_name}")
+        
         try:
-            # Create boto3 client with provided credentials or fall back to environment/default
-            if aws_access_key_id and aws_secret_access_key:
-                ec2 = boto3.client(
-                    'ec2', 
-                    region_name=region_name,
-                    aws_access_key_id=aws_access_key_id,
-                    aws_secret_access_key=aws_secret_access_key
-                )
-            else:
-                ec2 = boto3.client('ec2', region_name=region_name)
-                
             response = ec2.stop_instances(InstanceIds=[instance_id])
         except ClientError as e:
             logger.error(f"Error stopping EC2 instance: {e}")
@@ -275,31 +267,26 @@ def register_tools(mcp):
 
     @mcp.tool()
     async def list_ec2_instances(
-        region_name: str = "us-east-1",
-        aws_access_key_id: str = None,
-        aws_secret_access_key: str = None
+        session_id: str
     ):
         '''
         List all EC2 instances in a specific region.
-        :param region_name: str - AWS region name (default is "us-east-1").
-        :param aws_access_key_id: str - AWS Access Key ID (optional, uses environment if not provided).
-        :param aws_secret_access_key: str - AWS Secret Access Key (optional, uses environment if not provided).
+        REQUIRES: authenticate_aws must be called first to establish a session.
+        
+        :param session_id: str - AWS session identifier from authenticate_aws.
         :return: Dict[str, List[Dict[str, str]]] - List of all EC2 instances in the specified region. 
         '''
+        # Get authenticated EC2 client
+        ec2 = get_aws_client('ec2', session_id)
+        if not ec2:
+            return {
+                "error": f"No authenticated session found for '{session_id}'. Please call authenticate_aws first."
+            }
+        
+        region_name = get_aws_session_region(session_id)
         logger.info(f"Listing all EC2 instances in region {region_name}")
+        
         try:
-            # Create boto3 client with provided credentials or fall back to environment/default
-            if aws_access_key_id and aws_secret_access_key:
-                ec2 = boto3.client(
-                    'ec2', 
-                    region_name=region_name,
-                    aws_access_key_id=aws_access_key_id,
-                    aws_secret_access_key=aws_secret_access_key
-                )
-            else:
-                # Fall back to environment variables or default credential chain
-                ec2 = boto3.client('ec2', region_name=region_name)
-                
             response = ec2.describe_instances()
         except ClientError as e:
             logger.error(f"Error listing EC2 instances: {e}")
@@ -320,31 +307,27 @@ def register_tools(mcp):
     @mcp.tool()
     async def list_ec2_instance(
         instance_id: str,
-        region_name: str = "us-east-1",
-        aws_access_key_id: str = None,
-        aws_secret_access_key: str = None
+        session_id: str
     ):
         '''
         Get details of a specific EC2 instance by its ID.
+        REQUIRES: authenticate_aws must be called first to establish a session.
+        
         :param instance_id: str - ID of the EC2 instance to retrieve details for.
-        :param region_name: str - AWS region name (default is "us-east-1").
-        :param aws_access_key_id: str - AWS Access Key ID (optional, uses environment if not provided).
-        :param aws_secret_access_key: str - AWS Secret Access Key (optional, uses environment if not provided).
+        :param session_id: str - AWS session identifier from authenticate_aws.
         :return: Dict[str, List[Dict[str, str]]] - Details of the specified EC2 instance.
         '''
+        # Get authenticated EC2 client
+        ec2 = get_aws_client('ec2', session_id)
+        if not ec2:
+            return {
+                "error": f"No authenticated session found for '{session_id}'. Please call authenticate_aws first."
+            }
+        
+        region_name = get_aws_session_region(session_id)
         logger.info(f"Getting details for EC2 instance: {instance_id} in region {region_name}")
+        
         try:
-            # Create boto3 client with provided credentials or fall back to environment/default
-            if aws_access_key_id and aws_secret_access_key:
-                ec2 = boto3.client(
-                    'ec2', 
-                    region_name=region_name,
-                    aws_access_key_id=aws_access_key_id,
-                    aws_secret_access_key=aws_secret_access_key
-                )
-            else:
-                ec2 = boto3.client('ec2', region_name=region_name)
-                
             response = ec2.describe_instances(InstanceIds=[instance_id])
         except ClientError as e:
             logger.error(f"Error getting details for EC2 instance {instance_id}: {e}")
@@ -365,31 +348,27 @@ def register_tools(mcp):
     @mcp.tool()
     async def start_ec2_instance(
         instance_id: str,
-        region_name: str = "us-east-1",
-        aws_access_key_id: str = None,
-        aws_secret_access_key: str = None
+        session_id: str
     ):
         '''
         Start an EC2 instance by its ID.
+        REQUIRES: authenticate_aws must be called first to establish a session.
+        
         :param instance_id: str - ID of the EC2 instance to start.
-        :param region_name: str - AWS region name (default is "us-east-1").
-        :param aws_access_key_id: str - AWS Access Key ID (optional, uses environment if not provided).
-        :param aws_secret_access_key: str - AWS Secret Access Key (optional, uses environment if not provided).
+        :param session_id: str - AWS session identifier from authenticate_aws.
         :return: Dict[str, str] - Information about the started instance.
         '''
+        # Get authenticated EC2 client
+        ec2 = get_aws_client('ec2', session_id)
+        if not ec2:
+            return {
+                "error": f"No authenticated session found for '{session_id}'. Please call authenticate_aws first."
+            }
+        
+        region_name = get_aws_session_region(session_id)
         logger.info(f"Starting EC2 instance: {instance_id} in region {region_name}")
+        
         try:
-            # Create boto3 client with provided credentials or fall back to environment/default
-            if aws_access_key_id and aws_secret_access_key:
-                ec2 = boto3.client(
-                    'ec2', 
-                    region_name=region_name,
-                    aws_access_key_id=aws_access_key_id,
-                    aws_secret_access_key=aws_secret_access_key
-                )
-            else:
-                ec2 = boto3.client('ec2', region_name=region_name)
-                
             response = ec2.start_instances(InstanceIds=[instance_id])
         except ClientError as e:
             logger.error(f"Error starting EC2 instance: {e}")
@@ -401,31 +380,27 @@ def register_tools(mcp):
     @mcp.tool()
     async def terminate_ec2_instance(
         instance_id: str,
-        region_name: str = "us-east-1",
-        aws_access_key_id: str = None,
-        aws_secret_access_key: str = None
+        session_id: str
     ):
         '''
         Terminate an EC2 instance by its ID.
+        REQUIRES: authenticate_aws must be called first to establish a session.
+        
         :param instance_id: str -  ID of the EC2 instance to terminate.
-        :param region_name: str - AWS region name (default is "us-east-1").
-        :param aws_access_key_id: str - AWS Access Key ID (optional, uses environment if not provided).
-        :param aws_secret_access_key: str - AWS Secret Access Key (optional, uses environment if not provided).
+        :param session_id: str - AWS session identifier from authenticate_aws.
         :return: Dict[str, str] Information about the terminated instance.
         '''
+        # Get authenticated EC2 client
+        ec2 = get_aws_client('ec2', session_id)
+        if not ec2:
+            return {
+                "error": f"No authenticated session found for '{session_id}'. Please call authenticate_aws first."
+            }
+        
+        region_name = get_aws_session_region(session_id)
         logger.info(f"Terminating EC2 instance: {instance_id} in region {region_name}")
+        
         try:
-            # Create boto3 client with provided credentials or fall back to environment/default
-            if aws_access_key_id and aws_secret_access_key:
-                ec2 = boto3.client(
-                    'ec2', 
-                    region_name=region_name,
-                    aws_access_key_id=aws_access_key_id,
-                    aws_secret_access_key=aws_secret_access_key
-                )
-            else:
-                ec2 = boto3.client('ec2', region_name=region_name)
-                
             response = ec2.terminate_instances(InstanceIds=[instance_id])
         except ClientError as e:
             logger.error(f"Error terminating EC2 instance: {e}")
@@ -433,3 +408,140 @@ def register_tools(mcp):
 
         logger.info(f"Terminated EC2 instance: {instance_id}")
         return {"terminated_instance_id": instance_id}
+
+    @mcp.tool()
+    async def create_ssh_key_pair(
+        key_name: str,
+        session_id: str,
+        key_type: str = "rsa"
+    ):
+        '''
+        Create an SSH key pair for EC2 instances.
+        REQUIRES: authenticate_aws must be called first to establish a session.
+        
+        :param key_name: str - Name of the key pair to create.
+        :param session_id: str - AWS session identifier from authenticate_aws.
+        :param key_type: str - Type of key pair to create (default is "rsa").
+        :return: Dict[str, str] - Information about the created key pair including the private key material.
+        '''
+        # Get authenticated EC2 client
+        ec2 = get_aws_client('ec2', session_id)
+        if not ec2:
+            return {
+                "error": f"No authenticated session found for '{session_id}'. Please call authenticate_aws first."
+            }
+        
+        region_name = get_aws_session_region(session_id)
+        logger.info(f"Creating SSH key pair: {key_name} in region {region_name}")
+        
+        try:
+            response = ec2.create_key_pair(
+                        KeyName=key_name, 
+                        KeyType=key_type, 
+                        TagSpecifications=[
+                            {
+                                'ResourceType': 'key-pair',
+                                'Tags': [{'Key': 'Name', 'Value': key_name}]
+                            }
+                        ],
+                        KeyFormat='pem'
+                        )
+
+            key_material = response.get('KeyMaterial')
+            if not key_material:
+                raise Exception("Failed to retrieve KeyMaterial from response.")
+        except ClientError as e:
+            logger.error(f"Error creating SSH key pair: {e}")
+            return {"error": str(e)}
+        except Exception as e:
+            logger.error(f"Unexpected error creating SSH key pair: {e}")
+            return {"error": str(e)}
+
+        logger.info(f"Created SSH key pair: {key_name}")
+        return {
+            "key_name": key_name,
+            "key_fingerprint": response.get('KeyFingerprint'),
+            "key_material": key_material
+        }
+
+    @mcp.tool()
+    async def list_ssh_key_pairs(
+        session_id: str
+    ):
+        '''
+        List all SSH key pairs in a specific region.
+        REQUIRES: authenticate_aws must be called first to establish a session.
+        
+        :param session_id: str - AWS session identifier from authenticate_aws.
+        :return: Dict[str, List[Dict[str, str]]] - List of all SSH key pairs in the specified region.
+        '''
+        # Get authenticated EC2 client
+        ec2 = get_aws_client('ec2', session_id)
+        if not ec2:
+            return {
+                "error": f"No authenticated session found for '{session_id}'. Please call authenticate_aws first."
+            }
+        
+        region_name = get_aws_session_region(session_id)
+        logger.info(f"Listing SSH key pairs in region {region_name}")
+        
+        try:
+            response = ec2.describe_key_pairs()
+        except ClientError as e:
+            logger.error(f"Error listing SSH key pairs: {e}")
+            return {"error": str(e)}
+
+        key_pairs = []
+        for key_pair in response['KeyPairs']:
+            key_pairs.append({
+                'KeyName': key_pair['KeyName'],
+                'KeyFingerprint': key_pair['KeyFingerprint'],
+                'KeyType': key_pair.get('KeyType', 'rsa'),
+                'CreateTime': key_pair.get('CreateTime', '').isoformat() if key_pair.get('CreateTime') else None,
+                'Tags': key_pair.get('Tags', [])
+            })
+        
+        logger.info(f"Found {len(key_pairs)} SSH key pairs in region {region_name}")
+        return {"key_pairs": key_pairs}
+
+    @mcp.tool()
+    async def delete_ssh_key_pair(
+        key_name: str,
+        session_id: str
+    ):
+        '''
+        Delete an SSH key pair by name.
+        REQUIRES: authenticate_aws must be called first to establish a session.
+        
+        :param key_name: str - Name of the key pair to delete.
+        :param session_id: str - AWS session identifier from authenticate_aws.
+        :return: Dict[str, str] - Information about the deleted key pair.
+        '''
+        # Get authenticated EC2 client
+        ec2 = get_aws_client('ec2', session_id)
+        if not ec2:
+            return {
+                "error": f"No authenticated session found for '{session_id}'. Please call authenticate_aws first."
+            }
+        
+        region_name = get_aws_session_region(session_id)
+        logger.info(f"Deleting SSH key pair: {key_name} in region {region_name}")
+        
+        try:
+            # Check if key pair exists before attempting to delete
+            try:
+                ec2.describe_key_pairs(KeyNames=[key_name])
+            except ClientError as e:
+                if e.response['Error']['Code'] == 'InvalidKeyPair.NotFound':
+                    logger.warning(f"SSH key pair {key_name} not found")
+                    return {"error": f"Key pair '{key_name}' not found"}
+                else:
+                    raise e
+                
+            response = ec2.delete_key_pair(KeyName=key_name)
+        except ClientError as e:
+            logger.error(f"Error deleting SSH key pair: {e}")
+            return {"error": str(e)}
+
+        logger.info(f"Deleted SSH key pair: {key_name}")
+        return {"deleted_key_name": key_name}

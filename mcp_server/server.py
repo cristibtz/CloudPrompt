@@ -14,7 +14,14 @@ logging.basicConfig(
 logger = logging.getLogger("cloudprompt_mcp")
 
 http_client = httpx.AsyncClient(timeout=10.0)
-mcp = FastMCP("CloudPrompt MCP Server")
+mcp = FastMCP("CloudPrompt MCP Server",
+                instructions = '''
+                This is the MCP server for CloudPrompt, an AI agent that interacts with cloud providers.
+                It provides tools to manage AWS, Azure, GCP, and Proxmox resources.
+                Always ensure that the user is authenticated with the respective cloud provider before performing any operations.
+                For AWS operations, the user MUST call 'authenticate_aws' first and use the returned session_id for subsequent operations.
+                '''
+)
 
 register_aws_tools(mcp)
 register_azure_tools(mcp)
