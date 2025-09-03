@@ -154,7 +154,8 @@ def register_tools(mcp):
         session_id: str,
         StorageSize: int = 8,
         VolumeType: str = "gp3",
-        name: str = None
+        name: str = "CloudPrompt-Instance",
+        KeyName: str = None
     ):
         '''
         Create an EC2 instance with specified parameters.
@@ -200,6 +201,7 @@ def register_tools(mcp):
 
             response = ec2.run_instances(
                 ImageId=ImageId,
+                KeyName=KeyName,
                 MinCount=MinCount,
                 MaxCount=MaxCount,
                 InstanceType=InstanceType,
