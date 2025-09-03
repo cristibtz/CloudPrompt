@@ -66,17 +66,20 @@ VITE_KEYCLOAK_CLIENT_ID=cloudprompt-client
     ```
 2. Setup virtual environment and install the required packages:
     ```bash
-    python -m venv venv
+    python3 -m venv venv
     source venv/bin/activate  # On Windows use 'venv\Scripts\activate'
-    pip install -r requirements.txt # Or 'pip install -e .'
+    pip install -e .
     ```
 3. Set up the `.env` file with your credentials and configurations as shown above.
 4. Start MCP server:
     ```bash
-    python mcp_server/mcp_server.py
+    cd mcp_server/
+    pip install -r requirements.txt
+    python3 server.py
     ```
 5. Start backend API:
     ```bash
+    cd backend/
     pip install -r requirements.txt
     uvicorn app.main:app --reload --host 0.0.0.0 --port 8888
     ```
@@ -86,17 +89,17 @@ VITE_KEYCLOAK_CLIENT_ID=cloudprompt-client
     npm install
     npm run dev
     ```
-7. Open your browser and navigate to `http://localhost:3000` to access the CloudPrompt frontend. Or use CLI tool:
+7. Open your browser and navigate to `http://localhost:5173` to access the CloudPrompt frontend. Or use CLI tool:
     ```bash
-    python3 cloudprompt/cli/cli_tool.py # Or 'cloudprompt -p 'PROMPT' -c 'CLOUD PROVIDER'
+    cloudprompt -p 'PROMPT' -c 'CLOUD PROVIDER
     ```
 
 ## CLI Client Usage
 ```bash
-python3 cloudprompt/cli/cli_client.py -p "List ec2 instances" -c "aws"
+cloudprompt -p "List ec2 instances" -c "aws"
 ```
 
 ## Crypto Key
-```
+```Generate encryption key
 python3 -c "import secrets; print(secrets.token_hex(32))"
 ```

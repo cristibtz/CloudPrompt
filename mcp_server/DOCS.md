@@ -1,31 +1,87 @@
-# MCP Server tools documentation
+# CloudPrompt MCP Server Documentation
 
-## EC2 tools
+## Overview
 
-| Tool Name | Description | Parameters | Return Type | Example Usage |
-|-----------|-------------|------------|-------------|---------------|
-| `get_ami_by_os` | Get AMI by OS name in a specific region | `os_name: str` - Name of the operating system (e.g., "ubuntu")<br>`region_name: str = "us-east-1"` - AWS region name | `Dict[str, Dict[str, str]]` - Dictionary containing AMIs for the specified OS | `get_ami_by_os("ubuntu", "us-east-1")` |
-| `get_default_ami` | Get the default AMI for a specific region | `region_name: str = "us-east-1"` - AWS region name | `Dict[str, str]` - Dictionary containing default AMI ID for the specified region | `get_default_ami("us-west-2")` |
-| `create_ec2_instance` | Create an EC2 instance with specified parameters | `MinCount: int` - Minimum number of instances to launch<br>`MaxCount: int` - Maximum number of instances to launch<br>`InstanceType: str` - Type of instance (e.g., "t2.micro")<br>`ImageId: str` - ID of the AMI to use<br>`StorageSize: int` - Size of the root volume in GB (default is 8)<br>`VolumeType: str` - Type of volume to create (default is "gp3")<br>`region_name: str = "us-east-1"` - AWS region name | `Dict[str, List[Dict[str, str]]]` - Information about created instances | `create_ec2_instance(1, 1, "t2.micro", "ami-020cba7c55df1f615")` |
-| `stop_ec2_instance` | Stop an EC2 instance by its ID | `instance_id: str` - ID of the EC2 instance to stop<br>`region_name: str = "us-east-1"` - AWS region name | `Dict[str, str]` - Information about the stopped instance | `stop_ec2_instance("i-1234567890abcdef0")` |
-| `list_ec2_instances` | List all EC2 instances in a specific region | `region_name: str = "us-east-1"` - AWS region name | `Dict[str, List[Dict[str, str]]]` - List of all EC2 instances in the region | `list_ec2_instances("us-west-1")` |
-| `list_ec2_instance` | Get details of a specific EC2 instance by its ID | `instance_id: str` - ID of the EC2 instance to retrieve details for<br>`region_name: str = "us-east-1"` - AWS region name | ` Dict[str, List[Dict[str, str]]]` - Details of the specified EC2 instance | `list_ec2_instance("i-1234567890abcdef0")` |
-| `start_ec2_instance` | Start an EC2 instance by its ID | `instance_id: str` - ID of the EC2 instance to start<br>`region_name: str = "us-east-1"` - AWS region name | `Dict[str, str]` - Information about the started instance | `start_ec2_instance("i-1234567890abcdef0")` |
-| `terminate_ec2_instance` | Terminate an EC2 instance by its ID | `instance_id: str` - ID of the EC2 instance to terminate<br>`region_name: str = "us-east-1"` - AWS region name | `Dict[str, str]` - Information about the terminated instance | `terminate_ec2_instance("i-1234567890abcdef0")` |
+The CloudPrompt remote MCP (Model Context Protocol) Server is a comprehensive tool suite that provides AI agents with secure access to cloud infrastructure management capabilities across multiple providers. The server implements a session-based authentication system to ensure secure access to cloud resources.
 
-## S3 tools
+## Supported Cloud Providers
 
-| Tool Name | Description | Parameters | Return Type | Example Usage |
-|-----------|-------------|------------|-------------|---------------|
-| `create_s3_bucket` | Create an S3 bucket in a specific region | `bucket_name: str` - Name of the S3 bucket to create<br>`region_name: str = "us-east-1"` - AWS region name | `Dict[str, str]` - Information about the created bucket | `create_s3_bucket("my-bucket", "us-west-2")` |
-| `list_s3_buckets` | List all S3 buckets | `region_name: str = "us-east-1"` - AWS region name (ignored, lists all buckets)<br>`check_empty: bool = False` - Whether to check if buckets are empty | `Dict[str, List[Dict[str, str]]]` - List of buckets with their metadata | `list_s3_buckets("us-east-1", True)` |
-| `list_s3_bucket_objects` | List all objects in a specific S3 bucket | `bucket_name: str` - Name of the S3 bucket to list objects from<br>`region_name: str = "us-east-1"` - AWS region name | `Dict[str, List[Dict[str, Union[str, int]]]]` - List of objects with their keys, sizes, and last modified dates | `list_s3_bucket_objects("my-bucket")` |
-| `delete_s3_bucket_object` | Delete a specific object from an S3 bucket | `bucket_name: str` - Name of the S3 bucket<br>`object_key: str` - Key of the object to delete<br>`region_name: str = "us-east-1"` - AWS region name | `Dict[str, str]` - Information about the deleted object or error message | `delete_s3_bucket_object("my-bucket", "my-file.txt")` |
-| `delete_s3_bucket` | Delete an S3 bucket with optional force empty | `bucket_name: str` - Name of the S3 bucket to delete<br>`force: bool = False` - Whether to force delete by emptying the bucket first<br>`region_name: str = "us-east-1"` - AWS region name | `Dict[str, str]` - Information about the deleted bucket or error message | `delete_s3_bucket("my-bucket", True)` |
+- **AWS (Amazon Web Services)** - Full implementation with EC2, S3, and authentication tools
+- **Proxmox** - Virtual machine management capabilities
+- **Azure** - Placeholder implementation (development)
+- **GCP (Google Cloud Platform)** - Placeholder implementation (development)
 
-# Proxmox tools
+## ⚠️ Important Warnings
 
-| Tool Name | Description | Parameters | Return Type | Example Usage |
-|-----------|-------------|------------|-------------|---------------|
-| `list_vms` | List all VMs on a Proxmox node or all nodes if no node is specified | `node_name: str = None` - Name of the Proxmox node to list VMs from. If not provided, lists VMs from all nodes |
-| `List[Dict[str, str]]` - List of VMs with their VMID, name, and status | `list_vms("node1")` |
+- **Apply principle of least privilege** to all credentials
+- **All actions are final** - no undo functionality exists
+- **Test thoroughly** before using in production environments
+
+## Authentication
+
+### AWS Authentication
+
+AWS tools require session-based authentication. Call `authenticate_aws` first before using other AWS tools.
+
+### Proxmox Authentication
+
+Proxmox tools accept credentials as parameters or read from environment variables:
+- `PROXMOX_HOST`, `PROXMOX_USER`, `PROXMOX_PASS`
+
+
+### In development
+User's Keycloak ID is sent along with requests, the MCP server queries the database for encrypted credentials and the MCP server decrypts them to generate a session ID to use for subsequent tool calls.
+
+## AWS Tools
+
+### Authentication Tools
+
+| Tool Name | Description | Parameters | Return Type |
+|-----------|-------------|------------|-------------|
+| `authenticate_aws` | Authenticate with AWS and create a session (required first) | `region_name: str = "us-east-1"`<br>`aws_access_key_id: str = None`<br>`aws_secret_access_key: str = None` | `Dict` with session_id, account info, and auth status |
+
+### EC2 (Elastic Compute Cloud) Tools
+
+| Tool Name | Description | Parameters | Return Type |
+|-----------|-------------|------------|-------------|
+| `get_amis` | Get list of available AMIs for creating instances | `session_id: str` | `Dict` with region, total count, and AMI list |
+| `create_ec2_instance` | Create new EC2 instance(s) | `MinCount: int`<br>`MaxCount: int`<br>`InstanceType: str`<br>`ImageId: str`<br>`session_id: str`<br>`StorageSize: int = 8`<br>`VolumeType: str = "gp3"`<br>`name: str = "CloudPrompt-Instance"`<br>`KeyName: str = None` | `Dict` with created instance information |
+| `list_ec2_instances` | List all EC2 instances in region | `session_id: str` | `Dict` with instance list and details |
+| `list_ec2_instance` | Get details of specific EC2 instance | `instance_id: str`<br>`session_id: str` | `Dict` with instance details |
+| `start_ec2_instance` | Start a stopped EC2 instance | `instance_id: str`<br>`session_id: str` | `Dict` with operation status |
+| `stop_ec2_instance` | Stop a running EC2 instance | `instance_id: str`<br>`session_id: str` | `Dict` with operation status |
+| `terminate_ec2_instance` | Permanently delete EC2 instance | `instance_id: str`<br>`session_id: str` | `Dict` with operation status |
+| `create_ssh_key_pair` | Create SSH key pair for EC2 access | `key_name: str`<br>`session_id: str`<br>`key_type: str = "rsa"` | `Dict` with key information and private key |
+| `list_ssh_key_pairs` | List all SSH key pairs in region | `session_id: str` | `Dict` with key pair list |
+| `delete_ssh_key_pair` | Delete SSH key pair | `key_name: str`<br>`session_id: str` | `Dict` with operation status |
+
+### S3 (Simple Storage Service) Tools
+
+| Tool Name | Description | Parameters | Return Type |
+|-----------|-------------|------------|-------------|
+| `create_s3_bucket` | Create new S3 bucket | `bucket_name: str`<br>`session_id: str` | `Dict` with bucket information |
+| `list_s3_buckets` | List all S3 buckets | `session_id: str`<br>`check_empty: bool = False` | `Dict` with bucket list and metadata |
+| `list_s3_bucket_objects` | List objects in specific S3 bucket | `bucket_name: str`<br>`session_id: str` | `Dict` with object list and details |
+| `delete_s3_bucket_object` | Delete object from S3 bucket | `bucket_name: str`<br>`object_key: str`<br>`session_id: str` | `Dict` with operation status |
+| `delete_s3_bucket` | Delete S3 bucket | `bucket_name: str`<br>`session_id: str`<br>`force: bool = False` | `Dict` with operation status |
+
+## Proxmox Tools
+
+| Tool Name | Description | Parameters | Return Type |
+|-----------|-------------|------------|-------------|
+| `list_vms` | List virtual machines on Proxmox node(s) | `node_name: str`<br>`proxmox_host: str = None`<br>`proxmox_user: str = None`<br>`proxmox_pass: str = None` | `List[Dict]` with VM details |
+
+## Azure & GCP Tools (Development)
+
+### Azure Tools
+| Tool Name | Description | Parameters | Return Type |
+|-----------|-------------|------------|-------------|
+| `hello_azure` | Simple greeting tool for testing | `name: str` | `str` greeting message |
+
+### GCP Tools  
+| Tool Name | Description | Parameters | Return Type |
+|-----------|-------------|------------|-------------|
+| `hello_gcp` | Simple greeting tool for testing | `name: str` | `str` greeting message |
+| `list_gcp_vms` | Placeholder VM listing tool | None | `list` of placeholder VMs |
+
+**Remember: Apply principle of least privilege to credentials and test thoroughly before production use.**
