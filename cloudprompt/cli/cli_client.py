@@ -26,8 +26,8 @@ async def main():
     credentials = {}
     if args.cloud == 'aws':
         credentials = {
-            'access_key': args.aws_access_key or os.getenv('AWS_ACCESS_KEY_ID'),
-            'secret_key': args.aws_secret_key or os.getenv('AWS_SECRET_ACCESS_KEY'),
+            'AWS_ACCESS_KEY': args.aws_access_key or os.getenv('AWS_ACCESS_KEY_ID'),
+            'AWS_SECRET_ACCESS_KEY': args.aws_secret_key or os.getenv('AWS_SECRET_ACCESS_KEY'),
         }
     elif args.cloud == 'proxmox':
         credentials = {
