@@ -16,7 +16,7 @@ console = Console()
 load_dotenv()
 
 MODEL = os.getenv("MODEL")
-MCP_SERVER_URL = "http://localhost:8000/sse"
+MCP_SERVER_URL = "http://localhost:8000/mcp"
 
 logfire.configure(token=os.getenv("LOGFIRE_TOKEN"), scrubbing=False)
 logfire.instrument_pydantic_ai()
@@ -36,7 +36,12 @@ class CloudAgentBase:
             f"Use the right MCP tools to answer user queries as accurately as possible.\n"
             f"If an MCP tool is not proper, search the web for the information.\n"
             f"Don't hesitate to execute a tool if this is what the user asked. Don't ask for confirmations regarding creating, \
-            deleteting, updating, or listing resources.\n"
+            deleteting, updating, or listing resources.\n\n"
+            f"IMPORTANT FOR AWS OPERATIONS:\n"
+            f"1. ALWAYS call 'authenticate_aws' FIRST before any other AWS tools\n"
+            f"2. Use the session_id returned from authentication for all subsequent AWS operations\n"
+            f"3. If authentication fails, inform the user and do not proceed with other AWS operations\n"
+            f"4. All AWS tools require an authenticated session to work properly\n"
         )
 
     async def run(self, user_input: str, credentials: dict = None):
@@ -49,12 +54,12 @@ class CloudAgentBase:
 
         # Add credentials instruction if provided
         if credentials and self.CLOUD_TYPE == "AWS":
-            cred_instruction = "\nIMPORTANT: When calling AWS tools, use these credentials:\n"
+            cred_instruction = "\nIMPORTANT: Use these credentials when calling authenticate_aws:\n"
             if "AWS_ACCESS_KEY" in credentials:
                 cred_instruction += f"- aws_access_key_id: {credentials['AWS_ACCESS_KEY']}\n"
             if "AWS_SECRET_ACCESS_KEY" in credentials:
                 cred_instruction += f"- aws_secret_access_key: {credentials['AWS_SECRET_ACCESS_KEY']}\n"
-            cred_instruction += "Pass these as parameters to all tool function calls.\n"
+            cred_instruction += "Call authenticate_aws with these credentials BEFORE any other AWS operations.\n"
             user_prompt = cred_instruction + user_prompt
         
         if credentials and self.CLOUD_TYPE == "Proxmox":
@@ -108,10 +113,12 @@ async def filter_aws_tools(
 ) -> Union[list[ToolDefinition], None]:
     """Filter to only AWS tools + DuckDuckGo search"""
     aws_tools = [
+        "authenticate_aws", "get_aws_session_info", "list_aws_sessions",
         "create_ec2_instance", "start_ec2_instance", "stop_ec2_instance", 
         "terminate_ec2_instance", "list_ec2_instances", "get_amis", 
         "create_s3_bucket", "delete_s3_bucket", "delete_s3_bucket_object",
-        "list_s3_buckets", "list_s3_bucket_objects", "duckduckgo_search",
+        "list_s3_buckets", "list_s3_bucket_objects", "create_ssh_key_pair", 
+        "list_ssh_key_pairs", "delete_ssh_key_pair", "duckduckgo_search",
     ]
     return [tool_def for tool_def in tool_defs if tool_def.name in aws_tools]
 
