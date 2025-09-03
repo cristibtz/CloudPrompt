@@ -24,7 +24,7 @@ register_proxmox_tools(mcp)
 if __name__ == "__main__":
     try:
         logger.info("Starting MCP server on port 8000...")
-        mcp.run(transport="sse")
+        mcp.run(transport='streamable-http', port=8000)
     except KeyboardInterrupt:
         logger.info("Server shutting down...")
         asyncio.run(http_client.aclose())

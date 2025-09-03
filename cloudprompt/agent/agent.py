@@ -1,6 +1,6 @@
 import os, time
 from pydantic_ai import Agent, WebSearchTool
-from pydantic_ai.mcp import MCPServerSSE
+from pydantic_ai.mcp import MCPServerStreamableHTTP
 from pydantic_ai.tools import ToolDefinition
 from pydantic_ai.result import RunContext
 from dotenv import load_dotenv
@@ -21,7 +21,7 @@ MCP_SERVER_URL = "http://localhost:8000/sse"
 logfire.configure(token=os.getenv("LOGFIRE_TOKEN"), scrubbing=False)
 logfire.instrument_pydantic_ai()
 
-server = MCPServerSSE(url=MCP_SERVER_URL)
+server = MCPServerStreamableHTTP(url=MCP_SERVER_URL)
 
 
 class CloudAgentBase:
