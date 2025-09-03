@@ -177,30 +177,32 @@ def register_tools(mcp):
         logger.info(f"Creating EC2 instance: MinCount={MinCount}, MaxCount={MaxCount}, InstanceType={InstanceType}, ImageId={ImageId}, StorageSize={StorageSize}, VolumeType={VolumeType}, region={region_name}")
         try:
             if aws_access_key_id and aws_secret_access_key:
-                ec2 = boto3.resource(
+                ec2 = boto3.client(
                     'ec2',
                     region_name=region_name,
                     aws_access_key_id=aws_access_key_id,
                     aws_secret_access_key=aws_secret_access_key
                 )
             else:
-                ec2 = boto3.resource('ec2', region_name=region_name)
+                ec2 = boto3.client('ec2', region_name=region_name)
 
             # Get minimum required root volume size from the AMI
             try:
-                image = ec2.Image(ImageId)
+                image_response = ec2.describe_images(ImageIds=[ImageId])
                 min_root_size = 8  # Default minimum
-                for bdm in image.block_device_mappings or []:
-                    if bdm.get('DeviceName') == '/dev/sda1' and 'Ebs' in bdm:
-                        min_root_size = bdm['Ebs'].get('VolumeSize', min_root_size)
-                        break
+                if image_response['Images']:
+                    image = image_response['Images'][0]
+                    for bdm in image.get('BlockDeviceMappings', []):
+                        if bdm.get('DeviceName') == '/dev/sda1' and 'Ebs' in bdm:
+                            min_root_size = bdm['Ebs'].get('VolumeSize', min_root_size)
+                            break
                 if StorageSize < min_root_size:
                     logger.warning(f"Requested StorageSize {StorageSize}GB is less than AMI minimum {min_root_size}GB. Adjusting to minimum.")
                     StorageSize = min_root_size
             except Exception as e:
                 logger.warning(f"Could not determine AMI minimum root volume size: {e}. Proceeding with requested StorageSize {StorageSize}GB.")
 
-            instances = ec2.create_instances(
+            response = ec2.run_instances(
                 ImageId=ImageId,
                 MinCount=MinCount,
                 MaxCount=MaxCount,
@@ -227,12 +229,12 @@ def register_tools(mcp):
             return {"error": str(e)}
 
         instance_info = []
-        for instance in instances:
+        for instance in response['Instances']:
             instance_info.append({
-                "InstanceId": instance.id,
+                "InstanceId": instance['InstanceId'],
                 "Region": region_name
             })
-            logger.info(f"Created EC2 instance: {instance.id} in region {region_name}")
+            logger.info(f"Created EC2 instance: {instance['InstanceId']} in region {region_name}")
         return {"instances": instance_info}
 
     @mcp.tool()
@@ -252,19 +254,18 @@ def register_tools(mcp):
         '''
         logger.info(f"Stopping EC2 instance: {instance_id} in region {region_name}")
         try:
-            # Create boto3 resource with provided credentials or fall back to environment/default
+            # Create boto3 client with provided credentials or fall back to environment/default
             if aws_access_key_id and aws_secret_access_key:
-                ec2 = boto3.resource(
+                ec2 = boto3.client(
                     'ec2', 
                     region_name=region_name,
                     aws_access_key_id=aws_access_key_id,
                     aws_secret_access_key=aws_secret_access_key
                 )
             else:
-                ec2 = boto3.resource('ec2', region_name=region_name)
+                ec2 = boto3.client('ec2', region_name=region_name)
                 
-            instance = ec2.Instance(instance_id)
-            instance.stop()
+            response = ec2.stop_instances(InstanceIds=[instance_id])
         except ClientError as e:
             logger.error(f"Error stopping EC2 instance: {e}")
             return {"error": str(e)}
@@ -378,19 +379,18 @@ def register_tools(mcp):
         '''
         logger.info(f"Starting EC2 instance: {instance_id} in region {region_name}")
         try:
-            # Create boto3 resource with provided credentials or fall back to environment/default
+            # Create boto3 client with provided credentials or fall back to environment/default
             if aws_access_key_id and aws_secret_access_key:
-                ec2 = boto3.resource(
+                ec2 = boto3.client(
                     'ec2', 
                     region_name=region_name,
                     aws_access_key_id=aws_access_key_id,
                     aws_secret_access_key=aws_secret_access_key
                 )
             else:
-                ec2 = boto3.resource('ec2', region_name=region_name)
+                ec2 = boto3.client('ec2', region_name=region_name)
                 
-            instance = ec2.Instance(instance_id)
-            instance.start()
+            response = ec2.start_instances(InstanceIds=[instance_id])
         except ClientError as e:
             logger.error(f"Error starting EC2 instance: {e}")
             return {"error": str(e)}
@@ -415,19 +415,18 @@ def register_tools(mcp):
         '''
         logger.info(f"Terminating EC2 instance: {instance_id} in region {region_name}")
         try:
-            # Create boto3 resource with provided credentials or fall back to environment/default
+            # Create boto3 client with provided credentials or fall back to environment/default
             if aws_access_key_id and aws_secret_access_key:
-                ec2 = boto3.resource(
+                ec2 = boto3.client(
                     'ec2', 
                     region_name=region_name,
                     aws_access_key_id=aws_access_key_id,
                     aws_secret_access_key=aws_secret_access_key
                 )
             else:
-                ec2 = boto3.resource('ec2', region_name=region_name)
+                ec2 = boto3.client('ec2', region_name=region_name)
                 
-            instance = ec2.Instance(instance_id)
-            instance.terminate()
+            response = ec2.terminate_instances(InstanceIds=[instance_id])
         except ClientError as e:
             logger.error(f"Error terminating EC2 instance: {e}")
             return {"error": str(e)}
