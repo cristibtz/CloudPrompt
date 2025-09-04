@@ -163,7 +163,8 @@ async def filter_proxmox_tools(
 ) -> Union[list[ToolDefinition], None]:
     """Filter to only Proxmox tools"""
     proxmox_tools = [
-        "authenticate_proxmox", "list_vms", "list_proxmox_nodes", "duckduckgo_search"
+        "authenticate_proxmox", "list_vms", "list_proxmox_nodes", 
+        "start_vm", "stop_vm", "list_iso_images", "duckduckgo_search"
     ]
     return [tool_def for tool_def in tool_defs if tool_def.name in proxmox_tools]
 
