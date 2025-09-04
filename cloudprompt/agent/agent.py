@@ -37,6 +37,9 @@ class CloudAgentBase:
             f"If an MCP tool is not proper, search the web for the information.\n"
             f"Don't hesitate to execute a tool if this is what the user asked. Don't ask for confirmations regarding creating, \
             deleteting, updating, or listing resources.\n\n"
+
+            f"IMPORTANT:\n"
+            f"After you completed the tasks, list all the tools you(and how many times you tried to use them) used in the format: 'Tools used: tool1, tool2, tool3'"
         )
 
     async def run(self, user_input: str, credentials: dict = None):

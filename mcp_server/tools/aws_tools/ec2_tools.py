@@ -155,7 +155,7 @@ def register_tools(mcp):
         StorageSize: int = 8,
         VolumeType: str = "gp3",
         name: str = "CloudPrompt-Instance",
-        KeyName: str = None
+        KeyName: str = ""
     ):
         '''
         Create an EC2 instance with specified parameters.
@@ -199,13 +199,13 @@ def register_tools(mcp):
             except Exception as e:
                 logger.warning(f"Could not determine AMI minimum root volume size: {e}. Proceeding with requested StorageSize {StorageSize}GB.")
 
-            response = ec2.run_instances(
-                ImageId=ImageId,
-                KeyName=KeyName,
-                MinCount=MinCount,
-                MaxCount=MaxCount,
-                InstanceType=InstanceType,
-                BlockDeviceMappings=[
+            # Prepare run_instances parameters
+            run_params = {
+                'ImageId': ImageId,
+                'MinCount': MinCount,
+                'MaxCount': MaxCount,
+                'InstanceType': InstanceType,
+                'BlockDeviceMappings': [
                     {
                         'DeviceName': '/dev/sda1',
                         'Ebs': {
@@ -215,13 +215,22 @@ def register_tools(mcp):
                         }
                     }
                 ],
-                TagSpecifications=[
+                'TagSpecifications': [
                     {
                         'ResourceType': 'instance',
                         'Tags': [{'Key': 'Name', 'Value': name}] if name else []
                     }
                 ]
-            )
+            }
+            
+            # Only add KeyName if it's provided and not empty
+            if KeyName and KeyName.strip():
+                run_params['KeyName'] = KeyName
+                logger.info(f"Using SSH key: {KeyName}")
+            else:
+                logger.info("No SSH key specified - instance will be created without key pair")
+            
+            response = ec2.run_instances(**run_params)
         except ClientError as e:
             logger.error(f"Error creating EC2 instance: {e}")
             return {"error": str(e)}
