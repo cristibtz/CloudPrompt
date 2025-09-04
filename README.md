@@ -45,6 +45,8 @@ KEYCLOAK_CLIENT_ID=cloudprompt-client
 WEBHOOK_SECRET=cloudprompt-secret
 KEYCLOAK_ADMIN_USERNAME=cloudprompt-admin
 KEYCLOAK_ADMIN_PASSWORD=cloudprompt
+
+ENCRYPTION_KEY=
 ```
 
 ## Setup .env file in frontend directory
