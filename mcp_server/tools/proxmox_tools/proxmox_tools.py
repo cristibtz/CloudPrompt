@@ -169,7 +169,7 @@ def register_tools(mcp):
                 "status": vm_status.get("status", "unknown"),
                 "name": vm_status.get("name", "unknown"),
                 "uptime": vm_status.get("uptime", 0),
-                "message": f"VM {vmid} start command executed successfully"
+                "info": f"VM {vmid} start command executed successfully"
             }
             
         except Exception as e:
@@ -215,7 +215,7 @@ def register_tools(mcp):
                 "vmid": vmid,
                 "status": vm_status.get("status", "unknown"),
                 "name": vm_status.get("name", "unknown"),
-                "message": f"VM {vmid} stop command executed successfully"
+                "info": f"VM {vmid} stop command executed successfully"
             }
             
         except Exception as e:
@@ -335,4 +335,59 @@ def register_tools(mcp):
             logger.error(f"Error listing ISO images: {e}")
             return {"error": f"Failed to list ISO images: {str(e)}"}
 
-    
+    @mcp.tool()
+    async def delete_vm(
+        session_id: str,
+        node_name: str,
+        vmid: int
+    ):
+        '''
+        Delete a VM on a Proxmox node by its VMID.
+        REQUIRES: authenticate_proxmox must be called first to establish a session.
+
+        :param session_id: str - Proxmox session identifier from authenticate_proxmox.
+        :param node_name: str - Name of the Proxmox node where the VM is located.
+        :param vmid: int - VM ID to delete.
+        '''
+
+        # Get authenticated Proxmox API
+        proxmox = get_proxmox_api(session_id)
+        if not proxmox:
+            return {
+                "error": f"No authenticated session found for '{session_id}'. Please call authenticate_proxmox first."
+            }
+        
+        try:
+            logger.info(f"Deleting VM {vmid} on node {node_name}")
+            
+            # First check if VM exists
+            try:
+                vm_config = proxmox.nodes(node_name).qemu(vmid).config.get()
+                vm_name = vm_config.get('name', f'VM-{vmid}')
+            except Exception:
+                return {
+                    "error": f"VM {vmid} not found on node {node_name}. It may have already been deleted or never existed."
+                }
+            
+            # Delete the VM
+            try:
+                result = proxmox.nodes(node_name).qemu(vmid).delete()
+                
+                logger.info(f"Successfully deleted VM {vmid} ({vm_name}) on node {node_name}")
+
+                return {
+                    "action": "delete",
+                    "node": node_name,
+                    "vmid": vmid,
+                    "vm_name": vm_name,
+                    "task_id": result if result else "No task ID returned",
+                    "info": f"VM {vmid} ({vm_name}) deletion initiated successfully"
+                }
+            except Exception as delete_error:
+                return {
+                    "error": f"Failed to delete VM {vmid} on node {node_name}: {str(delete_error)}"
+                }
+            
+        except Exception as e:
+            logger.error(f"Error deleting VM {vmid} on node {node_name}: {e}")
+            
