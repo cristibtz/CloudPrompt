@@ -26,9 +26,10 @@ const PROVIDERS = {
   proxmox: {
     name: 'Proxmox',
     fields: [
-      { key: 'host', label: 'Host', type: 'text', placeholder: '192.168.100.203' },
-      { key: 'username', label: 'Username', type: 'text', placeholder: 'root' },
-      { key: 'password', label: 'Password', type: 'password', placeholder: 'Your password' }
+      { key: 'host', label: 'Host(use port if needed)', type: 'text', placeholder: '192.168.100.203 or 192.168.100.203:8006' },
+      { key: 'username', label: 'Username', type: 'text', placeholder: 'user@pam or user@pve' },
+      { key: 'token_name', label: 'API Token Name', type: 'text', placeholder: 'token-name' },
+      { key: 'token_value', label: 'API Token Value', type: 'password', placeholder: 'Your API Token Value' }
     ]
   },
   azure: {

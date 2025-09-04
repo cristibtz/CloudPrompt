@@ -22,7 +22,7 @@ except FileNotFoundError:
 
 setup(
     name="cloudprompt",
-    version="0.0.2",
+    version="0.0.3",
     author="Cristian Branet",
     author_email="branet.cristian@gmail.com",
     description="Automate cloud infrastructure tasks using simple LLM prompts",

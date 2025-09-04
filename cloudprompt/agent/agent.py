@@ -37,11 +37,6 @@ class CloudAgentBase:
             f"If an MCP tool is not proper, search the web for the information.\n"
             f"Don't hesitate to execute a tool if this is what the user asked. Don't ask for confirmations regarding creating, \
             deleteting, updating, or listing resources.\n\n"
-            f"IMPORTANT FOR AWS OPERATIONS:\n"
-            f"1. ALWAYS call 'authenticate_aws' FIRST before any other AWS tools\n"
-            f"2. Use the session_id returned from authentication for all subsequent AWS operations\n"
-            f"3. If authentication fails, inform the user and do not proceed with other AWS operations\n"
-            f"4. All AWS tools require an authenticated session to work properly\n"
         )
 
     async def run(self, user_input: str, credentials: dict = None):
@@ -51,6 +46,24 @@ class CloudAgentBase:
             "Always return the result exactly the same from the MCP server, don't modify it unless explicitly asked.\n"
             "If you need to figure out some information, use the builtin web search tool to find the information.\n"
         )
+
+        if self.CLOUD_TYPE == "AWS":
+            self.SYSTEM_PROMPT += (
+                f"IMPORTANT FOR AWS OPERATIONS:\n"
+                f"1. ALWAYS call 'authenticate_aws' FIRST before any other AWS tools\n"
+                f"2. Use the session_id returned from authentication for all subsequent AWS operations\n"
+                f"3. If authentication fails, inform the user and do not proceed with other AWS operations\n"
+                f"4. All AWS tools require an authenticated session to work properly\n"
+            )
+
+        if self.CLOUD_TYPE == "Proxmox":
+            self.SYSTEM_PROMPT += (
+                f"IMPORTANT FOR PROXMOX OPERATIONS:\n"
+                f"1. ALWAYS call 'authenticate_proxmox' FIRST before any other Proxmox tools\n"
+                f"2. Use the session_id returned from authentication for all subsequent Proxmox operations\n"
+                f"3. If authentication fails, inform the user and do not proceed with other Proxmox operations\n"
+                f"4. All Proxmox tools require an authenticated session to work properly\n"
+            )
 
         # Add credentials instruction if provided
         if credentials and self.CLOUD_TYPE == "AWS":
@@ -63,14 +76,16 @@ class CloudAgentBase:
             user_prompt = cred_instruction + user_prompt
         
         if credentials and self.CLOUD_TYPE == "Proxmox":
-            cred_instruction = "\nIMPORTANT: When calling Proxmox tools, use these credentials:\n"
+            cred_instruction = "\nIMPORTANT: Use these credentials when calling authenticate_proxmox:\n"
             if "host" in credentials:
-                cred_instruction += f"- proxmox_host: {credentials['host']}\n"
+                cred_instruction += f"- host: {credentials['host']}\n"
             if "username" in credentials:
-                cred_instruction += f"- proxmox_username: {credentials['username']}\n"
-            if "password" in credentials:
-                cred_instruction += f"- proxmox_password: {credentials['password']}\n"
-            cred_instruction += "Pass these as parameters to all tool function calls.\n"
+                cred_instruction += f"- username: {credentials['username']}\n"
+            if "token_name" in credentials:
+                cred_instruction += f"- token_name: {credentials['token_name']}\n"
+            if "token_value" in credentials:
+                cred_instruction += f"- token_value: {credentials['token_value']}\n"
+            cred_instruction += "Call authenticate_proxmox with these credentials BEFORE any other Proxmox operations.\n"
             user_prompt = cred_instruction + user_prompt
 
         # Debug info
@@ -113,12 +128,12 @@ async def filter_aws_tools(
 ) -> Union[list[ToolDefinition], None]:
     """Filter to only AWS tools + DuckDuckGo search"""
     aws_tools = [
-        "authenticate_aws", "get_aws_session_info", "list_aws_sessions",
-        "create_ec2_instance", "start_ec2_instance", "stop_ec2_instance", 
-        "terminate_ec2_instance", "list_ec2_instances", "get_amis", 
-        "create_s3_bucket", "delete_s3_bucket", "delete_s3_bucket_object",
-        "list_s3_buckets", "list_s3_bucket_objects", "create_ssh_key_pair", 
-        "list_ssh_key_pairs", "delete_ssh_key_pair", "duckduckgo_search",
+        "authenticate_aws", "get_amis", "create_ec2_instance", "start_ec2_instance", 
+        "stop_ec2_instance", "terminate_ec2_instance", "list_ec2_instances", 
+        "list_ec2_instance", "create_s3_bucket", "delete_s3_bucket", 
+        "delete_s3_bucket_object", "list_s3_buckets", "list_s3_bucket_objects", 
+        "create_ssh_key_pair", "list_ssh_key_pairs", "delete_ssh_key_pair", 
+        "duckduckgo_search"
     ]
     return [tool_def for tool_def in tool_defs if tool_def.name in aws_tools]
 
@@ -148,7 +163,7 @@ async def filter_proxmox_tools(
 ) -> Union[list[ToolDefinition], None]:
     """Filter to only Proxmox tools"""
     proxmox_tools = [
-        "list_vms"
+        "authenticate_proxmox", "list_vms", "list_proxmox_nodes", "duckduckgo_search"
     ]
     return [tool_def for tool_def in tool_defs if tool_def.name in proxmox_tools]
 

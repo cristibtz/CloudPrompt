@@ -101,7 +101,7 @@ async def create_credential(request: CreateCredentialRequest,
                 }
             )
     elif provider == "proxmox":
-        if "host" not in data or "username" not in data or "password" not in data:
+        if "host" not in data or "username" not in data or "token_name" not in data or "token_value" not in data:
             raise HTTPException(
                 status_code=400, 
                 detail={
@@ -112,7 +112,7 @@ async def create_credential(request: CreateCredentialRequest,
                     }
                 }
             )
-        if not data.get("host") or not data.get("username") or not data.get("password"):
+        if not data.get("host") or not data.get("username") or not data.get("token_name") or not data.get("token_value"):
             raise HTTPException(
                 status_code=400, 
                 detail={

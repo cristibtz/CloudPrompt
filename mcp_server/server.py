@@ -20,6 +20,7 @@ mcp = FastMCP("CloudPrompt MCP Server",
                 It provides tools to manage AWS, Azure, GCP, and Proxmox resources.
                 Always ensure that the user is authenticated with the respective cloud provider before performing any operations.
                 For AWS operations, the user MUST call 'authenticate_aws' first and use the returned session_id for subsequent operations.
+                For Proxmox operations, the user MUST call 'authenticate_proxmox' first and use the returned session_id for subsequent operations.
                 '''
 )
 
