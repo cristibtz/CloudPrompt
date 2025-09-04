@@ -23,7 +23,7 @@ def register_tools(mcp):
         This tool MUST be called before any other Proxmox tools.
         
         :param host: str - Proxmox host address (e.g., "192.168.100.203").
-        :param username: str - Proxmox username (e.g., "cristian@pve").
+        :param username: str - Proxmox username (e.g., "user@pve").
         :param token_name: str - Proxmox API token name.
         :param token_value: str - Proxmox API token value.
         :return: Dict with authentication status, cluster info, and session_id.
