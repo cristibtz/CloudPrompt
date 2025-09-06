@@ -123,12 +123,88 @@ def register_tools(mcp):
     async def create_vm(
         session_id: str,
         node_name: str,
+        vm_id: int,
         name: str,
         cores: int,
-        cpu: int,
         memory: int,
+        cdrom: str,
+        cpu: str = "x86-64-v2-AES",
+        sockets: int = 1,
+        net0: str = "virtio,bridge=vmbr0",
+        sata0: str = "local-lvm:10",  # 10GB disk
+        ostype: str = "l26",  # Linux 2.6/3.x/4.x/5.x 
+        scsihw: str = "virtio-scsi-pci",
+        boot: str = "cdn",
+        bootdisk: str = "sata0"
     ):
-        pass
+        '''
+        Create a new VM on a Proxmox node.
+        REQUIRES: authenticate_proxmox must be called first to establish a session.
+        
+        :param session_id: str - Proxmox session identifier from authenticate_proxmox.
+        :param node_name: str - Name of the Proxmox node where the VM will be created.
+        :param vm_id: int - Unique VM ID for the new VM.
+        :param name: str - Name of the new VM.
+        :param cores: int - Number of CPU cores for the VM.
+        :param sockets: int - Number of CPU sockets for the VM (default: 1).
+        :param memory: int - Memory size in MB for the VM (e.g., 1024 for 1GB, 2048 for 2GB).
+        :param cpu: str - CPU type for the VM (default: "x86-64-v2-AES").
+        :param cdrom: str - ISO image to attach to the VM (e.g., 'local:iso/ubuntu-20.04.iso').
+        :param net0: str - Network configuration (default: 'virtio,bridge=vmbr0').
+        :param sata0: str - Disk configuration (default: 'local-lvm:10' for 10GB disk).
+        :param ostype: str - OS type (default: 'l26' for Linux 2.6/3.x/4.x/5.x).
+        :param scsihw: str - SCSI controller type (default: 'virtio-scsi-pci').
+        :param boot: str - Boot order (default: 'cdn' - disk, cdrom, network).
+        :param bootdisk: str - Boot disk (default: 'sata0').
+        :return: Dict with operation status and VM information.
+        '''
+        # Get authenticated Proxmox API
+        proxmox = get_proxmox_api(session_id)
+        if not proxmox:
+            return {
+                "error": f"No authenticated session found for '{session_id}'. Please call authenticate_proxmox first."
+            }
+
+        try:
+            logger.info(f"Creating VM {vm_id} ({name}) on node {node_name} with {cores} cores, CPU: {cpu}, Memory: {memory}MB")
+            
+            # Create the VM
+            result = proxmox.nodes(node_name).qemu.create(
+                vmid=vm_id,
+                name=name,
+                cores=cores,
+                sockets=sockets,
+                cpu=cpu,
+                memory=memory,
+                net0=net0,
+                cdrom=cdrom,
+                sata0=sata0,
+                ostype=ostype,
+                scsihw=scsihw,
+                boot=boot,
+                bootdisk=bootdisk
+            )
+            
+            logger.info(f"Successfully created VM {vm_id} ({name}) on node {node_name}")
+            
+            return {
+                "action": "create",
+                "node": node_name,
+                "vmid": vm_id,
+                "name": name,
+                "cores": cores,
+                "sockets": sockets,
+                "cpu": cpu,
+                "memory": memory,
+                "task_id": result if result else "No task ID returned",
+                "info": f"VM {vm_id} ({name}) creation initiated successfully"
+            }
+        except Exception as e:
+            logger.error(f"Error creating VM {vm_id} ({name}) on node {node_name}: {e}")
+            return {"error": f"Failed to create VM {vm_id} ({name}) on node {node_name}: {str(e)}"}
+            logger.error(f"Error creating VM {vm_id} ({name}) on node {node_name}: {e}")
+            return {"error": f"Failed to create VM {vm_id} ({name}) on node {node_name}: {str(e)}"}
+
     @mcp.tool()
     async def start_vm(
         session_id: str,
