@@ -9,7 +9,8 @@ MODEL = os.getenv("MODEL")
 
 # Define Model costs per 1000 tokens
 MODEL_COSTS = {
-    "claude-sonnet-4-20250514": {"input": 0.0003, "output": 0.0015}
+    "claude-sonnet-4-20250514": {"input": 0.003, "output": 0.0015}
+    "gpt-5": {"input": 0.00125, "output": 0.0010},
     "gpt-5-mini" : {"input": 0.000250, "output": 0.002},
     "gpt-4o-mini": {"input": 0.000150, "output": 0.000600}, # Best
     "gpt-4.1-nano":{ "input": 0.00010, "output": 0.000400},
